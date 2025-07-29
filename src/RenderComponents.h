@@ -11,4 +11,9 @@ namespace res
     {
         Model model;
     };
+
+    struct cCamera
+    {
+        Camera3D raylibCamera;
+    };
 }

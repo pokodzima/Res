@@ -51,6 +51,7 @@ set(SOURCES
         src/Window.h
         src/Window.cpp
         src/RenderComponents.h
+        src/HelperComponents.h
 )
 
 set(VENDOR_SOURCES

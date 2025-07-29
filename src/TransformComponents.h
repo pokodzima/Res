@@ -13,6 +13,11 @@ namespace res
         float x, y, z, w;
     };
 
+    struct cScale
+    {
+        float x,y,z;
+    };
+
     struct cMatrix
     {
         Matrix matrix;
