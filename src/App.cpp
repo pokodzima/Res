@@ -4,6 +4,7 @@
 #include "RenderComponents.h"
 #include "RenderSystems.h"
 #include "TransformComponents.h"
+#include "TransformSystems.h"
 #include "Phases.h"
 
 #include "raylib.h"
@@ -15,25 +16,25 @@ namespace res
     App::App()
         : mWindow{1920 / 2, 1080 / 2, 60, "Res"}
     {
-        mWorld.import<flecs::stats>();
         mWorld.import<Phases>();
         mWorld.import<RenderSystems>();
         mWorld.import<DebugSystems>();
-        mWorld.set<flecs::Rest>({});
-
+        mWorld.import<TransformSystems>();
 
         auto roomEntity = mWorld.entity("Room");
         roomEntity.add<cRenderable>().set<cModel>({LoadModel("assets/room.glb")});
 
+
         auto cameraEntity = mWorld.entity("Camera");
-        auto cameraStartMatrix = MatrixLookAt(Vector3{5.6, 3.3, -5.3}, Vector3{0.3, 0.6, -2}, Vector3{0, 1, 0});
-        auto cameraRotation = QuaternionFromMatrix(cameraStartMatrix);
-        cameraEntity.set<cPosition>({5.6, 3.3, -5.3});
-        cameraEntity.set<cRotation>({cameraRotation.x, cameraRotation.y, cameraRotation.z, cameraRotation.w});
-        cameraEntity.set<cScale>({1, 1, 1});
-        cameraEntity.set<cMatrix>({cameraStartMatrix});
+        auto cameraTransform = MatrixInvert(MatrixLookAt(Vector3{5.6, 3.3, -5.3}, Vector3{0.3, 0.6, -2},
+                                                         Vector3{0, 1, 0}));
+        cameraEntity.set<cMatrix>({cameraTransform});
         cameraEntity.set<cCamera>({
-            Vector3{5.6, 3.3, -5.3}, Vector3{0.3, 0.6, -2}, Vector3{0, 1, 0}, 60, CAMERA_PERSPECTIVE
+            Vector3Zero(),
+            Vector3Zero(),
+            Vector3Zero(),
+            60,
+            CAMERA_PERSPECTIVE
         });
     }
 

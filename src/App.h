@@ -12,7 +12,6 @@ namespace res
 
     private:
         flecs::world mWorld;
-        flecs::system mRenderModelSystem;
         Window mWindow;
     };
 }

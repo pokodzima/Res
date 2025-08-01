@@ -15,11 +15,27 @@ namespace res
 
     struct cScale
     {
-        float x,y,z;
+        float x, y, z;
     };
 
     struct cMatrix
     {
         Matrix matrix;
+    };
+
+    struct cRebuildMatrix
+    {
+    };
+
+    struct cUpdatePositionFromMatrix
+    {
+    };
+
+    struct cUpdateRotationFromMatrix
+    {
+    };
+
+    struct cUpdateScaleFromMatrix
+    {
     };
 }

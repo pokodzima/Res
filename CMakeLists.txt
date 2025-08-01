@@ -55,6 +55,8 @@ set(SOURCES
         src/Phases.h
         src/RenderSystems.h
         src/DebugSystems.h
+        src/TransformSystems.h
+        src/MathUtils.h
 )
 
 set(VENDOR_SOURCES

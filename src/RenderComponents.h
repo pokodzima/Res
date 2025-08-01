@@ -16,4 +16,9 @@ namespace res
     {
         Camera3D raylibCamera;
     };
+
+    struct cRlSphere
+    {
+
+    };
 }

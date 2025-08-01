@@ -4,6 +4,7 @@
 namespace res
 {
     static flecs::entity OnTick;
+    static flecs::entity OnPostTick;
     static flecs::entity OnPreRender;
     static flecs::entity OnRender;
     static flecs::entity OnPreRender3D;
@@ -22,9 +23,14 @@ namespace res
             OnTick = world.entity()
                           .add(flecs::Phase)
                           .depends_on(flecs::OnUpdate);
+
+            OnPostTick = world.entity()
+                              .add(flecs::Phase)
+                              .depends_on(OnTick);
+
             OnPreRender = world.entity()
                                .add(flecs::Phase)
-                               .depends_on(OnTick);
+                               .depends_on(OnPostTick);
 
             OnRender = world.entity()
                             .add(flecs::Phase)

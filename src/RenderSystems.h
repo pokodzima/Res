@@ -1,6 +1,8 @@
 #pragma once
 #include "Phases.h"
 #include "RenderComponents.h"
+#include "TransformComponents.h"
+#include "MathUtils.h"
 
 #include "raylib.h"
 #include "flecs.h"
@@ -58,6 +60,22 @@ namespace res
                  .each([](const cRenderable& r, const cModel& mh)
                  {
                      DrawModel(mh.model, Vector3Zero(), 0.01f, WHITE);
+                 });
+
+            world.system<const cRenderable, const cRlSphere, const cMatrix>()
+                 .kind(OnRender3D)
+                 .each([](const cRenderable& r, const cRlSphere& rlSphere, const cMatrix matrix)
+                 {
+                     DrawSphere(GetPosition(matrix.matrix), 1.0f,RED);
+                 });
+
+            world.system<cCamera, const cMatrix>()
+                 .kind(OnPreRender)
+                 .each([](cCamera& cameraComponent, const cMatrix& matrixComponent)
+                 {
+                     cameraComponent.raylibCamera.position = GetPosition(matrixComponent.matrix);
+                     cameraComponent.raylibCamera.up = GetUpVector(matrixComponent.matrix);
+                     cameraComponent.raylibCamera.target = GetTargetForCamera(matrixComponent.matrix);
                  });
         }
     };
