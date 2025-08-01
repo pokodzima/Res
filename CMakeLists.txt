@@ -52,6 +52,9 @@ set(SOURCES
         src/Window.cpp
         src/RenderComponents.h
         src/HelperComponents.h
+        src/Phases.h
+        src/RenderSystems.h
+        src/DebugSystems.h
 )
 
 set(VENDOR_SOURCES
