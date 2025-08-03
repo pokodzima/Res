@@ -1,8 +1,9 @@
 #pragma once
-#include "flecs.h"
+#include <flecs.h>
 
 namespace res
 {
+    static flecs::entity OnBegin;
     static flecs::entity OnTick;
     static flecs::entity OnPostTick;
     static flecs::entity OnPreRender;
@@ -18,7 +19,11 @@ namespace res
         explicit Phases(flecs::world& world)
         {
             // ReSharper disable once CppExpressionWithoutSideEffects
-            world.module<Phases>();
+            world.module<Phases>();\
+
+            OnBegin = world.entity()
+                           .add(flecs::Phase)
+                           .depends_on(flecs::OnStart);
 
             OnTick = world.entity()
                           .add(flecs::Phase)

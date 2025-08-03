@@ -4,9 +4,9 @@
 #include "TransformComponents.h"
 #include "MathUtils.h"
 
-#include "raylib.h"
-#include "flecs.h"
-#include "raymath.h"
+#include <raylib.h>
+#include <flecs.h>
+#include <raymath.h>
 
 
 namespace res
@@ -67,12 +67,14 @@ namespace res
                  .each([](const cRenderable& r, const cRlSphere& rlSphere, const cMatrix matrix)
                  {
                      DrawSphere(GetPosition(matrix.matrix), 1.0f,RED);
+                     DrawGrid(20,0.5);
                  });
 
             world.system<cCamera, const cMatrix>()
-                 .kind(OnPreRender)
+                 .kind(OnBegin)
                  .each([](cCamera& cameraComponent, const cMatrix& matrixComponent)
                  {
+                     return;
                      cameraComponent.raylibCamera.position = GetPosition(matrixComponent.matrix);
                      cameraComponent.raylibCamera.up = GetUpVector(matrixComponent.matrix);
                      cameraComponent.raylibCamera.target = GetTargetForCamera(matrixComponent.matrix);

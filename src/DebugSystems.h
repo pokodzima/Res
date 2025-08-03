@@ -34,7 +34,6 @@ namespace res
                  .kind(OnPreRender)
                  .each([](cCamera& c)
                  {
-                     return;
                      UpdateCamera(&c.raylibCamera, CAMERA_FREE);
                  });
         }

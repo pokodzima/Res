@@ -6,9 +6,12 @@
 #include "TransformComponents.h"
 #include "TransformSystems.h"
 #include "Phases.h"
+#include "PhysicsSystems.h"
+#include "PhysicsComponents.h"
 
-#include "raylib.h"
-#include "raymath.h"
+#include <flecs.h>
+#include <raylib.h>
+#include <raymath.h>
 
 
 namespace res
@@ -20,9 +23,11 @@ namespace res
         mWorld.import<RenderSystems>();
         mWorld.import<DebugSystems>();
         mWorld.import<TransformSystems>();
+        mWorld.import<PhysicsSystems>();
+        mWorld.import<PhysicsComponents>();
 
         auto roomEntity = mWorld.entity("Room");
-        roomEntity.add<cRenderable>().set<cModel>({LoadModel("assets/room.glb")});
+        //roomEntity.add<cRenderable>().set<cModel>({LoadModel("assets/room.glb")});
 
 
         auto cameraEntity = mWorld.entity("Camera");
@@ -30,12 +35,21 @@ namespace res
                                                          Vector3{0, 1, 0}));
         cameraEntity.set<cMatrix>({cameraTransform});
         cameraEntity.set<cCamera>({
-            Vector3Zero(),
-            Vector3Zero(),
-            Vector3Zero(),
+            Vector3{5.6, 3.3, -5.3},
+            Vector3{0.3, 0.6, -2},
+            Vector3{0, 1, 0},
             60,
             CAMERA_PERSPECTIVE
         });
+
+        auto floor = mWorld.entity("Floor");
+        floor.add<cStaticPhysicsBody>();
+
+        auto sphere = mWorld.entity("Ball");
+        sphere.add<cPhysicsBall>();
+        sphere.add<cMatrix>();
+        sphere.add<cRenderable>();
+        sphere.add<cRlSphere>();
     }
 
     void App::Run()

@@ -57,6 +57,9 @@ set(SOURCES
         src/DebugSystems.h
         src/TransformSystems.h
         src/MathUtils.h
+        src/PhysicsSystems.h
+        src/PhysicsComponents.h
+        src/JoltUtils.h
 )
 
 set(VENDOR_SOURCES

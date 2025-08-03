@@ -2,8 +2,8 @@
 
 int main()
 {
-    auto app = new res::App();
+    const auto app = new res::App();
     app->Run();
-
+    delete app;
     return 0;
 }
