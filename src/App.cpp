@@ -27,7 +27,7 @@ namespace res
         mWorld.import<PhysicsComponents>();
 
         auto roomEntity = mWorld.entity("Room");
-        roomEntity.add<cRenderable>().set<cModel>({LoadModel("assets/room.glb")});
+        roomEntity.add<cRenderable>().set<cModel>({LoadModel("assets/roomV2.glb")});
         roomEntity.add<cMeshCollider>().add<cPhysicsBodyID>().set<cMatrix>({MatrixIdentity()});
 
 
