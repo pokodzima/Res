@@ -2,12 +2,10 @@
 #include "JoltUtils.h"
 
 #include <flecs.h>
-
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Body/BodyInterface.h>
-
-#include "Jolt/Core/JobSystemThreadPool.h"
-#include "Jolt/Physics/PhysicsSystem.h"
+#include <Jolt/Core/JobSystemThreadPool.h>
+#include <Jolt/Physics/PhysicsSystem.h>
 
 
 namespace res
@@ -20,7 +18,7 @@ namespace res
         std::unique_ptr<JPH::PhysicsSystem> physicsSystem;
         std::unique_ptr<JPH::TempAllocatorImpl> tempAllocator;
         std::unique_ptr<JPH::JobSystemThreadPool> jobSystem;
-        JPH::BodyInterface* bodyInterface;
+        JPH::BodyInterface* bodyInterface{};
     };
 
     struct cStaticPhysicsBody
@@ -31,6 +29,16 @@ namespace res
     struct cPhysicsBall
     {
         JPH::BodyID bodyID;
+    };
+
+    struct cPhysicsBodyID
+    {
+        JPH::BodyID bodyID;
+    };
+
+    struct cMeshCollider
+    {
+        
     };
 
     struct PhysicsComponents

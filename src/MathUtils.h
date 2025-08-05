@@ -35,7 +35,7 @@ namespace res
         return Vector3Normalize(up);
     }
 
-    inline Vector3 GetPosition(const Matrix& matrix)
+    inline Vector3 GetPositionFromMatrix(const Matrix& matrix)
     {
         // Extract the position vector from the matrix's 4th column
         const Vector3 position = {matrix.m12, matrix.m13, matrix.m14};
@@ -44,6 +44,6 @@ namespace res
 
     inline Vector3 GetTargetForCamera(const Matrix& matrix)
     {
-        return GetPosition(matrix) + GetForwardVector(matrix);
+        return GetPositionFromMatrix(matrix) + GetForwardVector(matrix);
     }
 }

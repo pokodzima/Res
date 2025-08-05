@@ -55,19 +55,19 @@ namespace res
                      EndDrawing();
                  });
 
-            world.system<const cRenderable, const cModel>()
+            world.system<const cRenderable, const cModel, const cMatrix>()
                  .kind(OnRender3D)
-                 .each([](const cRenderable& r, const cModel& mh)
+                 .each([](const cRenderable& r, const cModel& mh, const cMatrix matrix)
                  {
-                     DrawModel(mh.model, Vector3Zero(), 0.01f, WHITE);
+                     DrawModel(mh.model, GetPositionFromMatrix(matrix.matrix), 0.01f, WHITE);
                  });
 
             world.system<const cRenderable, const cRlSphere, const cMatrix>()
                  .kind(OnRender3D)
                  .each([](const cRenderable& r, const cRlSphere& rlSphere, const cMatrix matrix)
                  {
-                     DrawSphere(GetPosition(matrix.matrix), 1.0f,RED);
-                     DrawGrid(20,0.5);
+                     DrawSphere(GetPositionFromMatrix(matrix.matrix), 1.0f,RED);
+                     DrawGrid(20, 0.5);
                  });
 
             world.system<cCamera, const cMatrix>()
@@ -75,7 +75,7 @@ namespace res
                  .each([](cCamera& cameraComponent, const cMatrix& matrixComponent)
                  {
                      return;
-                     cameraComponent.raylibCamera.position = GetPosition(matrixComponent.matrix);
+                     cameraComponent.raylibCamera.position = GetPositionFromMatrix(matrixComponent.matrix);
                      cameraComponent.raylibCamera.up = GetUpVector(matrixComponent.matrix);
                      cameraComponent.raylibCamera.target = GetTargetForCamera(matrixComponent.matrix);
                  });

@@ -23,7 +23,7 @@ namespace res
                  .each([](flecs::entity entity, const cUpdatePositionFromMatrix& updateComponent,
                           const cMatrix& matrixComponent, cPosition& positionComponent)
                  {
-                     auto position = GetPosition(matrixComponent.matrix);
+                     auto position = GetPositionFromMatrix(matrixComponent.matrix);
                      positionComponent.x = position.x;
                      positionComponent.y = position.y;
                      positionComponent.z = position.z;

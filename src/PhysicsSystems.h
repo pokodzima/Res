@@ -1,6 +1,7 @@
 #pragma once
 #include "PhysicsComponents.h"
 #include "JoltUtils.h"
+#include "MathUtils.h"
 
 #include <flecs.h>
 #include <Jolt/Jolt.h>
@@ -11,11 +12,11 @@
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
-#include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
+#include "Jolt/Physics/Collision/Shape/MeshShape.h"
+#include "Jolt/Physics/Collision/Shape/StaticCompoundShape.h"
 
 #include <iostream>
-
 
 using namespace JPH::literals;
 
@@ -31,8 +32,6 @@ namespace res
                  .event(flecs::OnAdd)
                  .each([](flecs::entity e, sPhysicsHandle& handle)
                  {
-                     std::cout << "Start Physics..." << "\n";
-
                      JPH::RegisterDefaultAllocator();
 
                      JPH::Trace = TraceImpl;
@@ -44,7 +43,6 @@ namespace res
 
 
                      handle.tempAllocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024);
-                     //JPH::TempAllocatorImpl tempAllocator(10 * 1024 * 1024);
                      handle.jobSystem = std::make_unique<JPH::JobSystemThreadPool>(
                          JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers,
                          std::thread::hardware_concurrency() - 1);
@@ -70,53 +68,152 @@ namespace res
                  .event(flecs::OnRemove)
                  .each([](flecs::entity e, sPhysicsHandle& handle)
                  {
-                     std::cout << "Destroy Physics..." << "\n";
-
                      JPH::UnregisterTypes();
                      delete JPH::Factory::sInstance;
                      JPH::Factory::sInstance = nullptr;
                  });
 
-            world.observer<cStaticPhysicsBody>()
+            // world.observer<cStaticPhysicsBody>()
+            //      .event(flecs::OnAdd)
+            //      .each([&world](cStaticPhysicsBody& body)
+            //      {
+            //          auto& handle = world.get<sPhysicsHandle>();
+            //          JPH::BoxShapeSettings floorShapeSettings(JPH::Vec3(100.0f, 1.0f, 100.0f));
+            //          //floorShapeSettings.SetEmbedded();
+            //          JPH::ShapeSettings::ShapeResult floorShapeResult = floorShapeSettings.Create();
+            //          JPH::ShapeRefC floorShape = floorShapeResult.Get();
+            //          if (floorShapeResult.HasError())
+            //          {
+            //              std::cout << "Error creating shape";
+            //              return;
+            //          }
+            //          JPH::BodyCreationSettings floorSettings(floorShape, JPH::RVec3(0.0_r, -1.0_r, 0.0_r),
+            //                                                  JPH::Quat::sIdentity(), JPH::EMotionType::Static,
+            //                                                  PhysicsObjectLayers::NON_MOVING);
+            //
+            //          if (handle.bodyInterface == nullptr)
+            //          {
+            //              std::cout << "Error: no body interface";
+            //              return;
+            //          }
+            //          JPH::Body* floor = handle.bodyInterface->CreateBody(floorSettings);
+            //
+            //          handle.bodyInterface->AddBody(floor->GetID(), JPH::EActivation::DontActivate);
+            //          body.bodyID = floor->GetID();
+            //      });
+            //
+            // world.observer<cStaticPhysicsBody>()
+            //      .event(flecs::OnRemove)
+            //      .each([&world](cStaticPhysicsBody& body)
+            //      {
+            //          if (body.bodyID.IsInvalid())
+            //          {
+            //              return;
+            //          }
+            //          auto& handle = world.get<sPhysicsHandle>();
+            //          handle.bodyInterface->RemoveBody(body.bodyID);
+            //          handle.bodyInterface->DestroyBody(body.bodyID);
+            //      });
+
+            world.observer<cModel, cPhysicsBodyID, cMatrix, cMeshCollider>()
                  .event(flecs::OnAdd)
-                 .each([&world](cStaticPhysicsBody& body)
-                 {
-                     auto& handle = world.get<sPhysicsHandle>();
-                     JPH::BoxShapeSettings floorShapeSettings(JPH::Vec3(100.0f, 1.0f, 100.0f));
-                     //floorShapeSettings.SetEmbedded();
-                     JPH::ShapeSettings::ShapeResult floorShapeResult = floorShapeSettings.Create();
-                     JPH::ShapeRefC floorShape = floorShapeResult.Get();
-                     if (floorShapeResult.HasError())
+                 .each([&world](const cModel& modelComponent, cPhysicsBodyID& bodyIdHolder, cMatrix& matrixComponent,
+                                const cMeshCollider& meshColliderComponent)
                      {
-                         std::cout << "ERROR shape";
-                         return;
+                         JPH::StaticCompoundShapeSettings staticCompoundShapeSettings{};
+
+                         for (int meshIndex = 0; meshIndex < modelComponent.model.meshCount; ++meshIndex)
+                         {
+                             auto rlVertices = modelComponent.model.meshes[meshIndex].vertices;
+                             auto vertexCount = modelComponent.model.meshes[meshIndex].vertexCount;
+
+                             JPH::VertexList joltVertices{};
+
+                             std::vector<float> vertexBuffer{};
+
+                             for (int vertexIndex = 0; vertexIndex < vertexCount * 3; ++vertexIndex)
+                             {
+                                 if (vertexBuffer.size() < 3)
+                                 {
+                                     vertexBuffer.push_back(rlVertices[vertexIndex]);
+                                 }
+                                 if (vertexBuffer.size() == 3)
+                                 {
+                                     JPH::Float3 joltVertex{};
+
+                                     joltVertex.x = vertexBuffer[0];
+                                     joltVertex.y = vertexBuffer[1];
+                                     joltVertex.z = vertexBuffer[2];
+
+                                     joltVertices.push_back(joltVertex);
+
+                                     vertexBuffer.clear();
+                                 }
+                             }
+
+                             auto rlIndices = modelComponent.model.meshes[meshIndex].indices;
+                             auto triangleCount = modelComponent.model.meshes[meshIndex].triangleCount;
+
+                             JPH::IndexedTriangleList joltTriangleList{};
+
+                             for (int triangleIndex = 0; triangleIndex < triangleCount; ++triangleIndex)
+                             {
+                                 auto index1 = rlIndices[triangleIndex * 3];
+                                 auto index2 = rlIndices[triangleIndex * 3 + 1];
+                                 auto index3 = rlIndices[triangleIndex * 3 + 2];
+                                 JPH::IndexedTriangle joltTriangle{index1, index2, index3};
+                                 joltTriangleList.push_back(joltTriangle);
+                             }
+
+                             JPH::MeshShapeSettings meshShapeSettings{
+                                 joltVertices, joltTriangleList
+                             };
+
+                             JPH::ShapeSettings::ShapeResult shapeResult = meshShapeSettings.Create();
+
+                             if (shapeResult.HasError())
+                             {
+                                 std::cout << "Failed to create shape!" << "\n";
+                             }
+                             staticCompoundShapeSettings.AddShape(JPH::Vec3::sZero(), JPH::Quat::sIdentity(),
+                                                                  shapeResult.Get());
+                         }
+
+                         JPH::ShapeSettings::ShapeResult compoundShapeResult = staticCompoundShapeSettings.Create();
+
+                         if (compoundShapeResult.HasError())
+                         {
+                             std::cout << "Failed to create compound shape!" << "\n";
+                         }
+
+                         JPH::ShapeRefC meshShape = compoundShapeResult.Get();
+                         auto entityPosition = GetPositionFromMatrix(matrixComponent.matrix);
+                         auto entityRotation = QuaternionNormalize(QuaternionFromMatrix(matrixComponent.matrix));
+                         JPH::RVec3 bodyPosition{entityPosition.x, entityPosition.y, entityPosition.z};
+                         JPH::Quat bodyRotation{entityRotation.x, entityRotation.y, entityRotation.z, entityRotation.w};
+                         JPH::BodyCreationSettings bodySettings{
+                             meshShape, bodyPosition, bodyRotation, JPH::EMotionType::Static,
+                             PhysicsObjectLayers::NON_MOVING
+                         };
+
+                         auto& handle = world.get<sPhysicsHandle>();
+                         JPH::Body* body = handle.bodyInterface->CreateBody(bodySettings);
+                         handle.bodyInterface->AddBody(body->GetID(), JPH::EActivation::DontActivate);
+                         bodyIdHolder.bodyID = body->GetID();
                      }
-                     JPH::BodyCreationSettings floorSettings(floorShape, JPH::RVec3(0.0_r, -1.0_r, 0.0_r),
-                                                             JPH::Quat::sIdentity(), JPH::EMotionType::Static,
-                                                             PhysicsObjectLayers::NON_MOVING);
+                 );
 
-                     if (handle.bodyInterface == nullptr)
-                     {
-                         std::cout << "NO Body Interface, ERROR";
-                         return;
-                     }
-                     JPH::Body* floor = handle.bodyInterface->CreateBody(floorSettings);
-
-                     handle.bodyInterface->AddBody(floor->GetID(), JPH::EActivation::DontActivate);
-                     body.bodyID = floor->GetID();
-                 });
-
-            world.observer<cStaticPhysicsBody>()
+            world.observer<cPhysicsBodyID>()
                  .event(flecs::OnRemove)
-                 .each([&world](cStaticPhysicsBody& body)
+                 .each([&world](cPhysicsBodyID& bodyIdHolder)
                  {
-                     if (body.bodyID.IsInvalid())
+                     if (bodyIdHolder.bodyID.IsInvalid())
                      {
                          return;
                      }
                      auto& handle = world.get<sPhysicsHandle>();
-                     handle.bodyInterface->RemoveBody(body.bodyID);
-                     handle.bodyInterface->DestroyBody(body.bodyID);
+                     handle.bodyInterface->RemoveBody(bodyIdHolder.bodyID);
+                     handle.bodyInterface->DestroyBody(bodyIdHolder.bodyID);
                  });
 
             world.observer<cPhysicsBall>()
@@ -126,7 +223,8 @@ namespace res
                      auto& handle = world.get<sPhysicsHandle>();
                      JPH::BodyCreationSettings sphere_settings(new JPH::SphereShape(0.5f),
                                                                JPH::RVec3(0.0_r, 5.0_r, 0.0_r),
-                                                               JPH::Quat::sIdentity(), JPH::EMotionType::Dynamic,
+                                                               JPH::Quat::sIdentity(),
+                                                               JPH::EMotionType::Dynamic,
                                                                PhysicsObjectLayers::MOVING);
                      sphere_settings.mRestitution = 1.0f;
                      sphere_settings.mFriction = 0.0f;
@@ -165,6 +263,21 @@ namespace res
             world.system<const cPhysicsBall, cMatrix>()
                  .kind(OnTick)
                  .each([&world](const cPhysicsBall& pb, cMatrix& matrix)
+                 {
+                     if (pb.bodyID.IsInvalid())
+                     {
+                         std::cout << "body id is invalid" << "\n";
+                         return;
+                     }
+                     auto& handle = world.get<sPhysicsHandle>();
+                     auto pos = handle.bodyInterface->GetCenterOfMassPosition(pb.bodyID);
+                     matrix.matrix = MatrixTranslate(pos.GetX(), pos.GetY(), pos.GetZ());
+                     std::cout << pos.GetX() << "\n";
+                 });
+
+            world.system<const cPhysicsBodyID, cMatrix>()
+                 .kind(OnTick)
+                 .each([&world](const cPhysicsBodyID& pb, cMatrix& matrix)
                  {
                      if (pb.bodyID.IsInvalid())
                      {

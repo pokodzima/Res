@@ -27,7 +27,8 @@ namespace res
         mWorld.import<PhysicsComponents>();
 
         auto roomEntity = mWorld.entity("Room");
-        //roomEntity.add<cRenderable>().set<cModel>({LoadModel("assets/room.glb")});
+        roomEntity.add<cRenderable>().set<cModel>({LoadModel("assets/room.glb")});
+        roomEntity.add<cMeshCollider>().add<cPhysicsBodyID>().set<cMatrix>({MatrixIdentity()});
 
 
         auto cameraEntity = mWorld.entity("Camera");
@@ -41,9 +42,6 @@ namespace res
             60,
             CAMERA_PERSPECTIVE
         });
-
-        auto floor = mWorld.entity("Floor");
-        floor.add<cStaticPhysicsBody>();
 
         auto sphere = mWorld.entity("Ball");
         sphere.add<cPhysicsBall>();
