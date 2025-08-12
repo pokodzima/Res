@@ -1,32 +1,22 @@
-cmake_minimum_required(VERSION 3.11) # FetchContent is available in 3.11+
+cmake_minimum_required(VERSION 3.11)
 project(Resident)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
-# Generate compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(FetchContent)
-# Dependencies
-set(RAYLIB_VERSION 5.5)
-find_package(raylib ${RAYLIB_VERSION} QUIET) # QUIET or REQUIRED
-if (NOT raylib_FOUND) # If there's none, fetch and build raylib
 
-    FetchContent_Declare(
-            raylib
-            DOWNLOAD_EXTRACT_TIMESTAMP OFF
-            URL https://github.com/raysan5/raylib/archive/refs/tags/${RAYLIB_VERSION}.tar.gz
-    )
-    FetchContent_GetProperties(raylib)
-    if (NOT raylib_POPULATED) # Have we downloaded raylib yet?
-        set(FETCHCONTENT_QUIET NO)
-        FetchContent_MakeAvailable(raylib)
-    endif ()
-endif ()
+# Include RayLib
+FetchContent_Declare(
+        Raylib
+        GIT_REPOSITORY "https://github.com/raysan5/raylib"
+        GIT_TAG "5.5"
+)
+FetchContent_MakeAvailable(RayLib)
 
-# Include Jolt
+# Include Jolt Physics
 FetchContent_Declare(
         JoltPhysics
         GIT_REPOSITORY "https://github.com/jrouwe/JoltPhysics"
@@ -35,14 +25,30 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(JoltPhysics)
 
-# Include Flecs
+# Include flecs
 FetchContent_Declare(
         flecs
         GIT_REPOSITORY "https://github.com/SanderMertens/flecs"
+        GIT_TAG "v4.1.0"
 )
 FetchContent_MakeAvailable(flecs)
 
-# Our Project
+# Include ImGui (fetch to build directory)
+FetchContent_Declare(
+        ImGui
+        GIT_REPOSITORY "https://github.com/ocornut/imgui"
+        GIT_TAG "v1.92.2"
+)
+FetchContent_MakeAvailable(ImGui)
+
+# Include rlImGui
+FetchContent_Declare(
+        rlImGui
+        GIT_REPOSITORY "https://github.com/raylib-extras/rlImGui"
+        GIT_TAG "main"
+)
+FetchContent_MakeAvailable(rlImGui)
+
 set(SOURCES
         src/main.cpp
         src/App.h
@@ -62,32 +68,30 @@ set(SOURCES
         src/JoltUtils.h
 )
 
-set(VENDOR_SOURCES
-        vendor/rlImGui/rlImGui.cpp
-        vendor/imgui/imgui.cpp
-        vendor/imgui/imgui_demo.cpp
-        vendor/imgui/imgui_draw.cpp
-        vendor/imgui/imgui_tables.cpp
-        vendor/imgui/imgui_widgets.cpp
+set(IMGUI_SOURCES
+        ${imgui_SOURCE_DIR}/imgui.cpp
+        ${imgui_SOURCE_DIR}/imgui_demo.cpp
+        ${imgui_SOURCE_DIR}/imgui_draw.cpp
+        ${imgui_SOURCE_DIR}/imgui_tables.cpp
+        ${imgui_SOURCE_DIR}/imgui_widgets.cpp
 )
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${VENDOR_SOURCES})
-
-
-target_link_libraries(${PROJECT_NAME} raylib)
-
-target_include_directories(${PROJECT_NAME} PUBLIC ${JoltPhysics_SOURCE_DIR}/..
-        ${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui
-        ${CMAKE_CURRENT_SOURCE_DIR}/vendor/rlimGui
+set(RLIMGUI_SOURCES
+        ${rlimgui_SOURCE_DIR}/rlImGui.cpp
 )
 
-target_link_libraries(${PROJECT_NAME} Jolt)
+add_executable(${PROJECT_NAME} ${SOURCES} ${IMGUI_SOURCES} ${RLIMGUI_SOURCES})
 
-target_link_libraries(${PROJECT_NAME} flecs::flecs_static)
+target_link_libraries(${PROJECT_NAME} raylib Jolt flecs::flecs_static)
 
-add_custom_command(TARGET Resident POST_BUILD
+target_include_directories(${PROJECT_NAME} PRIVATE
+        ${imgui_SOURCE_DIR}
+        ${rlimgui_SOURCE_DIR}
+)
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_SOURCE_DIR}/assets"
-        "$<TARGET_FILE_DIR:Resident>/assets"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets"
         COMMENT "Copying assets to output directory"
 )
