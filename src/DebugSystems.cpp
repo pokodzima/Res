@@ -30,6 +30,6 @@ res::DebugSystems::DebugSystems(flecs::world& world)
          .kind(OnPreRenderPhase)
          .each([](cCamera& c)
          {
-             UpdateCamera(&c.raylibCamera, CAMERA_FREE);
+        //     UpdateCamera(&c.raylibCamera, CAMERA_FREE);
          });
 }

@@ -41,7 +41,6 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
 
              JPH::RegisterTypes();
 
-
              handle.tempAllocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024);
              handle.jobSystem = std::make_unique<JPH::JobSystemThreadPool>(
                  JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers,
