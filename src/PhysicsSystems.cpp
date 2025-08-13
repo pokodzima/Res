@@ -79,66 +79,8 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
                         const cMeshCollider& meshColliderComponent)
              {
                  JPH::StaticCompoundShapeSettings staticCompoundShapeSettings{};
-
-                 for (int meshIndex = 0; meshIndex < modelComponent.model.meshCount; ++meshIndex)
-                 {
-                     auto rlVertices = modelComponent.model.meshes[meshIndex].vertices;
-                     auto vertexCount = modelComponent.model.meshes[meshIndex].vertexCount;
-
-                     JPH::VertexList joltVertices{};
-
-                     std::vector<float> vertexBuffer{};
-
-                     for (int vertexIndex = 0; vertexIndex < vertexCount * 3; ++vertexIndex)
-                     {
-                         if (vertexBuffer.size() < 3)
-                         {
-                             vertexBuffer.push_back(rlVertices[vertexIndex]);
-                         }
-                         if (vertexBuffer.size() == 3)
-                         {
-                             JPH::Float3 joltVertex{};
-
-                             joltVertex.x = vertexBuffer[0];
-                             joltVertex.y = vertexBuffer[1];
-                             joltVertex.z = vertexBuffer[2];
-
-                             joltVertices.push_back(joltVertex);
-
-                             vertexBuffer.clear();
-                         }
-                     }
-
-                     auto rlIndices = modelComponent.model.meshes[meshIndex].indices;
-                     auto triangleCount = modelComponent.model.meshes[meshIndex].triangleCount;
-
-                     JPH::IndexedTriangleList joltTriangleList{};
-
-                     for (int triangleIndex = 0; triangleIndex < triangleCount; ++triangleIndex)
-                     {
-                         auto index1 = rlIndices[triangleIndex * 3];
-                         auto index2 = rlIndices[triangleIndex * 3 + 1];
-                         auto index3 = rlIndices[triangleIndex * 3 + 2];
-                         JPH::IndexedTriangle joltTriangle{index1, index2, index3};
-                         joltTriangleList.push_back(joltTriangle);
-                     }
-
-                     JPH::MeshShapeSettings meshShapeSettings{
-                         joltVertices, joltTriangleList
-                     };
-
-                     JPH::ShapeSettings::ShapeResult shapeResult = meshShapeSettings.Create();
-
-                     if (shapeResult.HasError())
-                     {
-                         std::cout << "Failed to create shape!" << "\n";
-                     }
-                     staticCompoundShapeSettings.AddShape(JPH::Vec3::sZero(), JPH::Quat::sIdentity(),
-                                                          shapeResult.Get());
-                 }
-
+                 AssembleStaticCompoundShape(staticCompoundShapeSettings, modelComponent);
                  JPH::ShapeSettings::ShapeResult compoundShapeResult = staticCompoundShapeSettings.Create();
-
                  if (compoundShapeResult.HasError())
                  {
                      std::cout << "Failed to create compound shape!" << "\n";
@@ -218,4 +160,71 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
              auto pos = handle.bodyInterface->GetCenterOfMassPosition(pb.bodyID);
              matrix.matrix = MatrixTranslate(pos.GetX(), pos.GetY(), pos.GetZ());
          });
+}
+
+void res::PopulateJoltVertices(const float* rlVertices, const int vertexCount, JPH::VertexList& joltVertices)
+{
+    std::vector<float> vertexBuffer{};
+
+    for (int vertexIndex = 0; vertexIndex < vertexCount * 3; ++vertexIndex)
+    {
+        if (vertexBuffer.size() < 3)
+        {
+            vertexBuffer.push_back(rlVertices[vertexIndex]);
+        }
+        if (vertexBuffer.size() == 3)
+        {
+            JPH::Float3 joltVertex{};
+
+            joltVertex.x = vertexBuffer[0];
+            joltVertex.y = vertexBuffer[1];
+            joltVertex.z = vertexBuffer[2];
+
+            joltVertices.push_back(joltVertex);
+
+            vertexBuffer.clear();
+        }
+    }
+}
+
+void res::PopulateJoltTriangles(const unsigned short* rlIndices, const int triangleCount,
+                                JPH::IndexedTriangleList& joltTriangles)
+{
+    for (int triangleIndex = 0; triangleIndex < triangleCount; ++triangleIndex)
+    {
+        auto index1 = rlIndices[triangleIndex * 3];
+        auto index2 = rlIndices[triangleIndex * 3 + 1];
+        auto index3 = rlIndices[triangleIndex * 3 + 2];
+        JPH::IndexedTriangle joltTriangle{index1, index2, index3};
+        joltTriangles.push_back(joltTriangle);
+    }
+}
+
+void res::AssembleStaticCompoundShape(JPH::StaticCompoundShapeSettings& shapeSettings, const cModel& modelComponent)
+{
+    for (int meshIndex = 0; meshIndex < modelComponent.model.meshCount; ++meshIndex)
+    {
+        auto rlVertices = modelComponent.model.meshes[meshIndex].vertices;
+        auto vertexCount = modelComponent.model.meshes[meshIndex].vertexCount;
+        JPH::VertexList joltVertices{};
+        PopulateJoltVertices(rlVertices, vertexCount, joltVertices);
+
+        auto rlIndices = modelComponent.model.meshes[meshIndex].indices;
+        auto triangleCount = modelComponent.model.meshes[meshIndex].triangleCount;
+        JPH::IndexedTriangleList joltTriangleList{};
+        PopulateJoltTriangles(rlIndices, triangleCount, joltTriangleList);
+
+        JPH::MeshShapeSettings meshShapeSettings{
+            joltVertices, joltTriangleList
+        };
+
+        JPH::ShapeSettings::ShapeResult shapeResult = meshShapeSettings.Create();
+
+        if (shapeResult.HasError())
+        {
+            std::cout << "Failed to create shape!" << "\n";
+        }
+        shapeSettings.AddShape(JPH::Vec3::sZero(), JPH::Quat::sIdentity(),
+                               shapeResult.Get());
+    }
 }
