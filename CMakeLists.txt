@@ -1,7 +1,11 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.15)
+cmake_policy(SET CMP0063 NEW)
 project(Resident)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -33,6 +37,12 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(flecs)
 
+set_target_properties(flecs PROPERTIES
+        LINKER_LANGUAGE CXX
+        CXX_STANDARD 11
+        CXX_STANDARD_REQUIRED ON
+)
+
 # Include ImGui (fetch to build directory)
 FetchContent_Declare(
         ImGui
@@ -61,11 +71,16 @@ set(SOURCES
         src/Phases.h
         src/RenderSystems.h
         src/DebugSystems.h
+        src/DebugSystems.cpp
         src/TransformSystems.h
         src/MathUtils.h
         src/PhysicsSystems.h
         src/PhysicsComponents.h
         src/JoltUtils.h
+        src/Phases.cpp
+        src/PhysicsSystems.cpp
+        src/RenderSystems.cpp
+        src/TransformSystems.cpp
 )
 
 set(IMGUI_SOURCES
@@ -82,7 +97,7 @@ set(RLIMGUI_SOURCES
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${IMGUI_SOURCES} ${RLIMGUI_SOURCES})
 
-target_link_libraries(${PROJECT_NAME} raylib Jolt flecs::flecs_static)
+target_link_libraries(${PROJECT_NAME} PRIVATE raylib Jolt flecs::flecs_static)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${imgui_SOURCE_DIR}

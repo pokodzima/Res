@@ -19,7 +19,8 @@ namespace res
     App::App()
         : mWindow{1920 / 2, 1080 / 2, 60, "Res"}
     {
-        mWorld.import<Phases>();
+        CreatePhases(mWorld);
+
         mWorld.import<RenderSystems>();
         mWorld.import<DebugSystems>();
         mWorld.import<TransformSystems>();
