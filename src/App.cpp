@@ -49,13 +49,13 @@ namespace res
         sphere.add<cMatrix>();
         sphere.add<cRenderable>();
         sphere.add<cRlSphere>();
+        sphere.add<cPhysicsBodyID>();
     }
 
     void App::Run()
     {
         while (!WindowShouldClose())
         {
-            // ReSharper disable once CppExpressionWithoutSideEffects
             mWorld.progress();
         }
     }

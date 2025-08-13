@@ -28,7 +28,6 @@ namespace res
 
     struct cPhysicsBall
     {
-        JPH::BodyID bodyID;
     };
 
     struct cPhysicsBodyID

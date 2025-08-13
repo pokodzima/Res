@@ -174,9 +174,9 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
              handle.bodyInterface->DestroyBody(bodyIdHolder.bodyID);
          });
 
-    world.observer<cPhysicsBall>()
+    world.observer<const cPhysicsBall, cPhysicsBodyID>()
          .event(flecs::OnAdd)
-         .each([&world](cPhysicsBall& body)
+         .each([&world](const cPhysicsBall& body, cPhysicsBodyID& bodyIdHolder)
          {
              auto& handle = world.get<sPhysicsHandle>();
              JPH::BodyCreationSettings sphere_settings(new JPH::SphereShape(0.5f),
@@ -186,26 +186,12 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
                                                        PhysicsObjectLayers::MOVING);
              sphere_settings.mRestitution = 1.0f;
              sphere_settings.mFriction = 0.0f;
-             body.bodyID = handle.bodyInterface->CreateAndAddBody(
+             bodyIdHolder.bodyID = handle.bodyInterface->CreateAndAddBody(
                  sphere_settings, JPH::EActivation::Activate);
 
              // Now you can interact with the dynamic body, in this case we're going to give it a velocity.
              // (note that if we had used CreateBody then we could have set the velocity straight on the body before adding it to the physics system)
-             handle.bodyInterface->SetLinearVelocity(body.bodyID, JPH::Vec3(0.0f, -1.0f, 0.0f));
-         });
-
-    world.observer<cPhysicsBall>()
-         .event(flecs::OnRemove)
-         .each([&world](cPhysicsBall& body)
-         {
-             if (body.bodyID.IsInvalid())
-             {
-                 std::cout << "body id is invalid" << "\n";
-                 return;
-             }
-             auto& handle = world.get<sPhysicsHandle>();
-             handle.bodyInterface->RemoveBody(body.bodyID);
-             handle.bodyInterface->DestroyBody(body.bodyID);
+             handle.bodyInterface->SetLinearVelocity(bodyIdHolder.bodyID, JPH::Vec3(0.0f, -1.0f, 0.0f));
          });
 
     auto onTickPhase = world.lookup(OnTickPhaseName.data());
@@ -217,20 +203,6 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
              auto& handle = world.get<sPhysicsHandle>();
              handle.physicsSystem->Update(1.0f / 60.0f, 1, handle.tempAllocator.get(),
                                           handle.jobSystem.get());
-         });
-
-    world.system<const cPhysicsBall, cMatrix>()
-         .kind(onTickPhase)
-         .each([&world](const cPhysicsBall& pb, cMatrix& matrix)
-         {
-             if (pb.bodyID.IsInvalid())
-             {
-                 std::cout << "body id is invalid" << "\n";
-                 return;
-             }
-             auto& handle = world.get<sPhysicsHandle>();
-             auto pos = handle.bodyInterface->GetCenterOfMassPosition(pb.bodyID);
-             matrix.matrix = MatrixTranslate(pos.GetX(), pos.GetY(), pos.GetZ());
          });
 
     world.system<const cPhysicsBodyID, cMatrix>("Move Physics Body")
