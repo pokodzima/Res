@@ -69,18 +69,18 @@ set(SOURCES
         src/RenderComponents.h
         src/HelperComponents.h
         src/Phases.h
+        src/Phases.cpp
         src/RenderSystems.h
+        src/RenderSystems.cpp
         src/DebugSystems.h
         src/DebugSystems.cpp
         src/TransformSystems.h
+        src/TransformSystems.cpp
         src/MathUtils.h
         src/PhysicsSystems.h
+        src/PhysicsSystems.cpp
         src/PhysicsComponents.h
         src/JoltUtils.h
-        src/Phases.cpp
-        src/PhysicsSystems.cpp
-        src/RenderSystems.cpp
-        src/TransformSystems.cpp
 )
 
 set(IMGUI_SOURCES
