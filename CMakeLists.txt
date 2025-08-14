@@ -81,6 +81,7 @@ set(SOURCES
         src/PhysicsSystems.cpp
         src/PhysicsComponents.h
         src/JoltUtils.h
+        src/JoltUtils.cpp
 )
 
 set(IMGUI_SOURCES

@@ -3,12 +3,20 @@
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
 #include <Jolt/Physics/Collision/ObjectLayer.h>
+#include <Jolt/Geometry/IndexedTriangle.h>
 
 #include <cstdarg>
 #include <iostream>
 
+namespace JPH
+{
+    class StaticCompoundShapeSettings;
+}
+
 namespace res
 {
+    struct cModel;
+
     namespace PhysicsObjectLayers
     {
         static constexpr JPH::ObjectLayer NON_MOVING = 0;
@@ -23,18 +31,7 @@ namespace res
         static constexpr JPH::uint NUM_LAYERS(2);
     }
 
-    static void TraceImpl(const char* inFMT, ...)
-    {
-        // Format the message
-        va_list list;
-        va_start(list, inFMT);
-        char buffer[1024];
-        vsnprintf(buffer, sizeof(buffer), inFMT, list);
-        va_end(list);
-
-        // Print to the TTY
-        std::cout << buffer << "\n";
-    }
+    static void TraceImpl(const char* inFMT, ...);
 
 #ifdef JPH_ENABLE_ASSERTS
     // Callback for asserts, connect this to your own assert handler if you have one
@@ -52,19 +49,7 @@ namespace res
     class ObjectLayerPairFilterImpl final : public JPH::ObjectLayerPairFilter
     {
     public:
-        [[nodiscard]] bool ShouldCollide(JPH::ObjectLayer inLayer1, JPH::ObjectLayer inLayer2) const override
-        {
-            switch (inLayer1)
-            {
-            case PhysicsObjectLayers::NON_MOVING:
-                return inLayer2 == PhysicsObjectLayers::MOVING;
-            case PhysicsObjectLayers::MOVING:
-                return true;
-            default:
-                JPH_ASSERT(false);
-                return false;
-            }
-        }
+        [[nodiscard]] bool ShouldCollide(JPH::ObjectLayer inLayer1, JPH::ObjectLayer inLayer2) const override;
     };
 
     class BPLayerInterfaceImpl final : public JPH::BroadPhaseLayerInterface
@@ -109,18 +94,12 @@ namespace res
     class ObjectVsBroadPhaseLayerFilterImpl : public JPH::ObjectVsBroadPhaseLayerFilter
     {
     public:
-        [[nodiscard]] bool ShouldCollide(JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2) const override
-        {
-            switch (inLayer1)
-            {
-            case PhysicsObjectLayers::NON_MOVING:
-                return inLayer2 == BroadPhaseLayers::MOVING;
-            case PhysicsObjectLayers::MOVING:
-                return true;
-            default:
-                JPH_ASSERT(false);
-                return false;
-            }
-        }
+        [[nodiscard]] bool ShouldCollide(JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2) const override;
     };
+
+
+    void PopulateJoltVertices(const float* rlVertices, int vertexCount, JPH::VertexList& joltVertices);
+    void PopulateJoltTriangles(const unsigned short* rlIndices, int triangleCount,
+                               JPH::IndexedTriangleList& joltTriangles);
+    void AssembleStaticCompoundShape(JPH::StaticCompoundShapeSettings& shapeSettings, const cModel& modelComponent);
 }
