@@ -31,7 +31,18 @@ namespace res
         static constexpr JPH::uint NUM_LAYERS(2);
     }
 
-    static void TraceImpl(const char* inFMT, ...);
+    static void TraceImpl(const char* inFMT, ...)
+    {
+        // Format the message
+        va_list list;
+        va_start(list, inFMT);
+        char buffer[1024];
+        vsnprintf(buffer, sizeof(buffer), inFMT, list);
+        va_end(list);
+
+        // Print to the TTY
+        std::cout << buffer << "\n";
+    }
 
 #ifdef JPH_ENABLE_ASSERTS
     // Callback for asserts, connect this to your own assert handler if you have one

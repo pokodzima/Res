@@ -6,19 +6,6 @@
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
 #include <Jolt/Physics/Collision/Shape/StaticCompoundShape.h>
 
-void res::TraceImpl(const char* inFMT, ...)
-{
-    // Format the message
-    va_list list;
-    va_start(list, inFMT);
-    char buffer[1024];
-    vsnprintf(buffer, sizeof(buffer), inFMT, list);
-    va_end(list);
-
-    // Print to the TTY
-    std::cout << buffer << "\n";
-}
-
 bool res::ObjectLayerPairFilterImpl::ShouldCollide(JPH::ObjectLayer inLayer1, JPH::ObjectLayer inLayer2) const
 {
     switch (inLayer1)
