@@ -60,8 +60,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(rlImGui)
 
 set(SOURCES
-        src/App.h
-        src/App.cpp
         src/TransformComponents.h
         src/Window.h
         src/Window.cpp
