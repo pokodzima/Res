@@ -14,7 +14,7 @@ include(FetchContent)
 
 # Include RayLib
 FetchContent_Declare(
-        Raylib
+        RayLib
         GIT_REPOSITORY "https://github.com/raysan5/raylib"
         GIT_TAG "5.5"
 )
@@ -60,7 +60,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(rlImGui)
 
 set(SOURCES
-        src/main.cpp
         src/App.h
         src/App.cpp
         src/TransformComponents.h
@@ -96,18 +95,26 @@ set(RLIMGUI_SOURCES
         ${rlimgui_SOURCE_DIR}/rlImGui.cpp
 )
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${IMGUI_SOURCES} ${RLIMGUI_SOURCES})
+add_library(${PROJECT_NAME} STATIC
+        ${SOURCES}
+        ${IMGUI_SOURCES}
+        ${RLIMGUI_SOURCES}
+)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE raylib Jolt flecs::flecs_static)
+add_library(Res::Res ALIAS ${PROJECT_NAME})
+# add_executable(${PROJECT_NAME} ${SOURCES} ${IMGUI_SOURCES} ${RLIMGUI_SOURCES})
 
-target_include_directories(${PROJECT_NAME} PRIVATE
+target_include_directories(${PROJECT_NAME} PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${imgui_SOURCE_DIR}
         ${rlimgui_SOURCE_DIR}
 )
 
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/assets"
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets"
-        COMMENT "Copying assets to output directory"
-)
+target_link_libraries(${PROJECT_NAME} PUBLIC raylib Jolt flecs::flecs_static)
+
+#add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+#        COMMAND ${CMAKE_COMMAND} -E copy_directory
+#        "${CMAKE_SOURCE_DIR}/assets"
+#        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets"
+#        COMMENT "Copying assets to output directory"
+#)

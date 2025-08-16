@@ -1,15 +1,5 @@
 #pragma once
 
-namespace res
-{
-    struct cModel;
-}
-
-namespace JPH
-{
-    class StaticCompoundShapeSettings;
-}
-
 namespace flecs
 {
     struct world;

@@ -9,7 +9,6 @@ namespace res
     public:
         App();
         void Run();
-
     private:
         flecs::world mWorld;
         Window mWindow;
