@@ -21,11 +21,6 @@ namespace res
         JPH::BodyInterface* bodyInterface{};
     };
 
-    struct cStaticPhysicsBody
-    {
-        JPH::BodyID bodyID;
-    };
-
     struct cPhysicsBall
     {
     };
@@ -37,7 +32,15 @@ namespace res
 
     struct cMeshCollider
     {
-        
+    };
+
+    struct cCharacterCapsule
+    {
+    };
+
+    struct cGravity
+    {
+        JPH::Vec3 gravityForce = JPH::Vec3(0.0f, -9.8f, 0.0f);
     };
 
     struct PhysicsComponents

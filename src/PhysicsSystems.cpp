@@ -22,6 +22,10 @@
 
 #include <iostream>
 
+#include "Jolt/Physics/Character/Character.h"
+#include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
+#include "Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h"
+
 using namespace JPH::literals;
 
 res::PhysicsSystems::PhysicsSystems(flecs::world& world)
@@ -115,34 +119,65 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
              handle.bodyInterface->DestroyBody(bodyIdHolder.bodyID);
          });
 
-    world.observer<const cPhysicsBall, cPhysicsBodyID>()
+    world.observer<const cPhysicsBall, cPhysicsBodyID>("Create Physics Ball")
          .event(flecs::OnAdd)
          .each([&world](const cPhysicsBall& body, cPhysicsBodyID& bodyIdHolder)
          {
              auto& handle = world.get<sPhysicsHandle>();
-             JPH::BodyCreationSettings sphere_settings(new JPH::SphereShape(0.5f),
-                                                       JPH::RVec3(0.0_r, 5.0_r, 0.0_r),
-                                                       JPH::Quat::sIdentity(),
-                                                       JPH::EMotionType::Dynamic,
-                                                       PhysicsObjectLayers::MOVING);
-             sphere_settings.mRestitution = 1.0f;
-             sphere_settings.mFriction = 0.0f;
+             JPH::BodyCreationSettings sphereSettings(new JPH::SphereShape(0.5f),
+                                                      JPH::RVec3(0.0_r, 5.0_r, 0.0_r),
+                                                      JPH::Quat::sIdentity(),
+                                                      JPH::EMotionType::Dynamic,
+                                                      PhysicsObjectLayers::MOVING);
+             sphereSettings.mRestitution = 1.0f;
+             sphereSettings.mFriction = 0.0f;
              bodyIdHolder.bodyID = handle.bodyInterface->CreateAndAddBody(
-                 sphere_settings, JPH::EActivation::Activate);
+                 sphereSettings, JPH::EActivation::Activate);
 
              // Now you can interact with the dynamic body, in this case we're going to give it a velocity.
              // (note that if we had used CreateBody then we could have set the velocity straight on the body before adding it to the physics system)
              handle.bodyInterface->SetLinearVelocity(bodyIdHolder.bodyID, JPH::Vec3(0.0f, -1.0f, 0.0f));
          });
 
-    auto onTickPhase = world.lookup(OnTickPhaseName.data());
+    world.observer<const cCharacterCapsule, cPhysicsBodyID>("Create Character Capsule")
+         .event(flecs::OnAdd)
+         .each([&world](const cCharacterCapsule& characterCapsule, cPhysicsBodyID& bodyIdHolder)
+         {
+             //TODO: write a Character
+             // auto& handle = world.get<sPhysicsHandle>();
+             //
+             // auto capsuleShape = JPH::RotatedTranslatedShapeSettings(JPH::Vec3(0, 0.5f * 2 + 1, 0),
+             //                                                         JPH::Quat::sIdentity(),
+             //                                                         new JPH::CapsuleShape(0.5f * 2, 1)).Create().Get();
+             //
+             // JPH::CharacterSettings characterSettings{};
+             // characterSettings.mMaxSlopeAngle = 45.0f;
+             // characterSettings.mLayer = PhysicsObjectLayers::MOVING;
+             // characterSettings.mShape = capsuleShape;
+             // characterSettings.mFriction = 0.5f;
+             // characterSettings.mSupportingVolume = JPH::Plane(JPH::Vec3::sAxisY(),);
+         });
+
+    const auto onTickPhase = world.lookup(OnTickPhaseName.data());
+
+    world.system<const cGravity, cPhysicsBodyID>("Apply Gravity")
+         .kind(onTickPhase)
+         .each([&world](const cGravity& gravityComponent, cPhysicsBodyID& bodyIdHolder)
+         {
+             auto& handle = world.get<sPhysicsHandle>();
+
+             auto currentPos = handle.bodyInterface->GetCenterOfMassPosition(bodyIdHolder.bodyID);
+             handle.bodyInterface->MoveKinematic(bodyIdHolder.bodyID,
+                                                 currentPos + (gravityComponent.gravityForce * GetFrameTime()),
+                                                 JPH::Quat::sIdentity(), GetFrameTime());
+         });
 
     world.system("Run Physics Simulation")
          .kind(onTickPhase)
          .run([&world](flecs::iter& it)
          {
              auto& handle = world.get<sPhysicsHandle>();
-             handle.physicsSystem->Update(1.0f / 60.0f, 1, handle.tempAllocator.get(),
+             handle.physicsSystem->Update(GetFrameTime(), 1, handle.tempAllocator.get(),
                                           handle.jobSystem.get());
          });
 

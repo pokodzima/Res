@@ -16,12 +16,13 @@ res::DebugSystems::DebugSystems(flecs::world& world)
     auto onRender2DPhase = world.lookup(OnRender2DPhaseName.data());
     auto OnPreRenderPhase = world.lookup(OnPreRenderPhaseName.data());
 
-    world.system<const cMeshCollider, const cMatrix>("Render ImGui")
+    world.system("Render ImGui")
          .kind(onRender2DPhase)
-         .each([](const cMeshCollider& mc, const cMatrix& m)
+         .run([&world](flecs::iter it)
          {
+             auto character = world.lookup("Character");
+             auto pos = GetPositionFromMatrix(character.get<cMatrix>().matrix);
              rlImGuiBegin();
-             auto pos = GetPositionFromMatrix(m.matrix);
              ImGui::Text("%f,%f,%f", pos.x, pos.y, pos.z);
              rlImGuiEnd();
          });
@@ -30,6 +31,6 @@ res::DebugSystems::DebugSystems(flecs::world& world)
          .kind(OnPreRenderPhase)
          .each([](cCamera& c)
          {
-        //     UpdateCamera(&c.raylibCamera, CAMERA_FREE);
+             //     UpdateCamera(&c.raylibCamera, CAMERA_FREE);
          });
 }
