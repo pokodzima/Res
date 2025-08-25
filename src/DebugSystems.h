@@ -6,6 +6,6 @@ namespace res
 {
     struct DebugSystems
     {
-        DebugSystems(flecs::world& world);
+        explicit DebugSystems(flecs::world& world);
     };
 }
