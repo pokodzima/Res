@@ -14,12 +14,12 @@ res::UISystems::UISystems(flecs::world& world)
 
     auto OnRender2DPhase = world.lookup(res::OnRender2DPhaseName.data());
 
-    world.system<const cText, const cPosition2D, const cRenderable2D, const cTextElement, const cColor>(
+    world.system<const TextComponent, const cPosition2D, const cRenderable2D, const cTextElement, const ColorComponent>(
              "Render UI Text")
          .kind(OnRender2DPhase)
-         .each([](const cText& textComponent, const cPosition2D& positionComponent,
+         .each([](const TextComponent& textComponent, const cPosition2D& positionComponent,
                   const cRenderable2D& renderableComponent, const cTextElement& elementComponent,
-                  const cColor& colorComponent)
+                  const ColorComponent& colorComponent)
          {
              DrawText(textComponent.textString.c_str(), (int)positionComponent.x, (int)positionComponent.y,
                       elementComponent.fontSize,

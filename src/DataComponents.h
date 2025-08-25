@@ -5,12 +5,12 @@
 
 namespace res
 {
-    struct cText
+    struct TextComponent
     {
         std::string textString;
     };
 
-    struct cColor
+    struct ColorComponent
     {
         Color color;
     };
