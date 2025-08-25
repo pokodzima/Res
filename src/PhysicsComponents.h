@@ -36,6 +36,8 @@ namespace res
 
     struct cCharacterCapsule
     {
+        float characterHeight;
+        float characterRadius;
     };
 
     struct cGravity

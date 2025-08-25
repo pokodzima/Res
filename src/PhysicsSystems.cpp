@@ -140,22 +140,31 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
          });
 
     world.observer<const cCharacterCapsule, cPhysicsBodyID>("Create Character Capsule")
-         .event(flecs::OnAdd)
+         .event(flecs::OnSet)
          .each([&world](const cCharacterCapsule& characterCapsule, cPhysicsBodyID& bodyIdHolder)
          {
-             //TODO: write a Character
-             // auto& handle = world.get<sPhysicsHandle>();
-             //
-             // auto capsuleShape = JPH::RotatedTranslatedShapeSettings(JPH::Vec3(0, 0.5f * 2 + 1, 0),
-             //                                                         JPH::Quat::sIdentity(),
-             //                                                         new JPH::CapsuleShape(0.5f * 2, 1)).Create().Get();
-             //
-             // JPH::CharacterSettings characterSettings{};
-             // characterSettings.mMaxSlopeAngle = 45.0f;
-             // characterSettings.mLayer = PhysicsObjectLayers::MOVING;
-             // characterSettings.mShape = capsuleShape;
-             // characterSettings.mFriction = 0.5f;
-             // characterSettings.mSupportingVolume = JPH::Plane(JPH::Vec3::sAxisY(),);
+             auto& handle = world.get<sPhysicsHandle>();
+
+             JPH::RefConst<JPH::Shape> capsuleShape = JPH::RotatedTranslatedShapeSettings(
+                                                          JPH::Vec3(
+                                                              0, 0.5f * characterCapsule.characterHeight +
+                                                              characterCapsule.characterRadius,
+                                                              0),
+                                                          JPH::Quat::sIdentity(),
+                                                          new JPH::CapsuleShape(0.5f * characterCapsule.characterHeight,
+                                                              characterCapsule.characterRadius)).
+                                                      Create().Get();
+
+             JPH::Ref<JPH::CharacterSettings> characterSettings = new JPH::CharacterSettings();
+             characterSettings->mMaxSlopeAngle = 45.0f;
+             characterSettings->mLayer = PhysicsObjectLayers::MOVING;
+             characterSettings->mShape = capsuleShape;
+             characterSettings->mFriction = 0.5f;
+             characterSettings->mSupportingVolume = JPH::Plane(JPH::Vec3::sAxisY(), -characterCapsule.characterRadius);
+             auto character = new JPH::Character(characterSettings, JPH::Vec3::sZero(), JPH::Quat::sIdentity(), 0,
+                                                 handle.physicsSystem.get());
+             bodyIdHolder.bodyID = character->GetBodyID();
+             character->AddToPhysicsSystem(JPH::EActivation::Activate);
          });
 
     const auto onTickPhase = world.lookup(OnTickPhaseName.data());
@@ -171,6 +180,16 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
                                                  currentPos + (gravityComponent.gravityForce * GetFrameTime()),
                                                  JPH::Quat::sIdentity(), GetFrameTime());
          });
+
+    world.system<const cCharacterCapsule, const cPhysicsBodyID>("Move character with keys")
+         .kind(onTickPhase)
+         .each([&world](const cCharacterCapsule& characterComponent, const cPhysicsBodyID& bodyIdHolder)
+         {
+             auto& handle = world.get<sPhysicsHandle>();
+             auto movement = JPH::Vec3((float)IsKeyDown(KEY_W) * 10.0f - (float)IsKeyDown(KEY_S) * 10.0f, 0.0f, 0.0f);
+             handle.bodyInterface->SetLinearVelocity(bodyIdHolder.bodyID, movement);
+         });
+
 
     world.system("Run Physics Simulation")
          .kind(onTickPhase)

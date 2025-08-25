@@ -20,11 +20,11 @@ res::DebugSystems::DebugSystems(flecs::world& world)
          .kind(onRender2DPhase)
          .run([&world](flecs::iter it)
          {
-             // auto character = world.lookup("Character");
-             // auto pos = GetPositionFromMatrix(character.get<cMatrix>().matrix);
-             // rlImGuiBegin();
-             // ImGui::Text("%f,%f,%f", pos.x, pos.y, pos.z);
-             // rlImGuiEnd();
+             auto character = world.lookup("Character");
+             auto pos = GetPositionFromMatrix(character.get<cMatrix>().matrix);
+             rlImGuiBegin();
+             ImGui::Text("%f,%f,%f", pos.x, pos.y, pos.z);
+             rlImGuiEnd();
          });
 
     world.system<cCamera>("Debug Camera Movement")
