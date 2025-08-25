@@ -79,6 +79,10 @@ set(SOURCES
         src/PhysicsComponents.h
         src/JoltUtils.h
         src/JoltUtils.cpp
+        src/DataComponents.h
+        src/UIComponents.h
+        src/UISystems.h
+        src/UISystems.cpp
 )
 
 set(IMGUI_SOURCES
@@ -100,7 +104,6 @@ add_library(${PROJECT_NAME} STATIC
 )
 
 add_library(Res::Res ALIAS ${PROJECT_NAME})
-# add_executable(${PROJECT_NAME} ${SOURCES} ${IMGUI_SOURCES} ${RLIMGUI_SOURCES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -109,10 +112,3 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC raylib Jolt flecs::flecs_static)
-
-#add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-#        COMMAND ${CMAKE_COMMAND} -E copy_directory
-#        "${CMAKE_SOURCE_DIR}/assets"
-#        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets"
-#        COMMENT "Copying assets to output directory"
-#)
