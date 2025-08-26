@@ -5,6 +5,10 @@
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
 #include <Jolt/Physics/Collision/Shape/StaticCompoundShape.h>
+#include <spdlog/spdlog.h>
+
+#include <utility>
+
 
 bool res::ObjectLayerPairFilterImpl::ShouldCollide(JPH::ObjectLayer inLayer1, JPH::ObjectLayer inLayer2) const
 {
@@ -37,39 +41,39 @@ bool res::ObjectVsBroadPhaseLayerFilterImpl::ShouldCollide(JPH::ObjectLayer inLa
 
 void res::PopulateJoltVertices(const float* rlVertices, const int vertexCount, JPH::VertexList& joltVertices)
 {
-    std::vector<float> vertexBuffer{};
-
-    for (int vertexIndex = 0; vertexIndex < vertexCount * 3; ++vertexIndex)
+    if (!rlVertices || vertexCount <= 0)
     {
-        if (vertexBuffer.size() < 3)
-        {
-            vertexBuffer.push_back(rlVertices[vertexIndex]);
-        }
-        if (vertexBuffer.size() == 3)
-        {
-            JPH::Float3 joltVertex{};
+        spdlog::error("Error populating triangles");
+        return;
+    }
 
-            joltVertex.x = vertexBuffer[0];
-            joltVertex.y = vertexBuffer[1];
-            joltVertex.z = vertexBuffer[2];
+    joltVertices.reserve(joltVertices.size() + static_cast<size_t>(vertexCount));
 
-            joltVertices.push_back(joltVertex);
-
-            vertexBuffer.clear();
-        }
+    for (int i = 0; i < vertexCount; ++i)
+    {
+        const int base = i * 3;
+        JPH::Float3 v{rlVertices[base + 0], rlVertices[base + 1], rlVertices[base + 2]};
+        joltVertices.push_back(v);
     }
 }
 
 void res::PopulateJoltTriangles(const unsigned short* rlIndices, const int triangleCount,
                                 JPH::IndexedTriangleList& joltTriangles)
 {
-    for (int triangleIndex = 0; triangleIndex < triangleCount; ++triangleIndex)
+    if (!rlIndices || triangleCount <= 0)
     {
-        auto index1 = rlIndices[triangleIndex * 3];
-        auto index2 = rlIndices[triangleIndex * 3 + 1];
-        auto index3 = rlIndices[triangleIndex * 3 + 2];
-        JPH::IndexedTriangle joltTriangle{index1, index2, index3};
-        joltTriangles.push_back(joltTriangle);
+        spdlog::error("Error populating triangles");
+        return;
+    }
+
+    joltTriangles.reserve(joltTriangles.size() + static_cast<size_t>(triangleCount));
+    for (int i = 0; i < triangleCount; ++i)
+    {
+        const int base = i * 3;
+        const auto i0 = rlIndices[base + 0];
+        const auto i1 = rlIndices[base + 1];
+        const auto i2 = rlIndices[base + 2];
+        joltTriangles.emplace_back(i0, i1, i2);
     }
 }
 
@@ -77,25 +81,23 @@ void res::AssembleStaticCompoundShape(JPH::StaticCompoundShapeSettings& shapeSet
 {
     for (int meshIndex = 0; meshIndex < modelComponent.model.meshCount; ++meshIndex)
     {
-        auto rlVertices = modelComponent.model.meshes[meshIndex].vertices;
-        auto vertexCount = modelComponent.model.meshes[meshIndex].vertexCount;
-        JPH::VertexList joltVertices{};
-        PopulateJoltVertices(rlVertices, vertexCount, joltVertices);
+        const auto& mesh = modelComponent.model.meshes[meshIndex];
 
-        auto rlIndices = modelComponent.model.meshes[meshIndex].indices;
-        auto triangleCount = modelComponent.model.meshes[meshIndex].triangleCount;
+        JPH::VertexList joltVertices{};
+        PopulateJoltVertices(mesh.vertices, mesh.vertexCount, joltVertices);
+
         JPH::IndexedTriangleList joltTriangleList{};
-        PopulateJoltTriangles(rlIndices, triangleCount, joltTriangleList);
+        PopulateJoltTriangles(mesh.indices, mesh.triangleCount, joltTriangleList);
 
         JPH::MeshShapeSettings meshShapeSettings{
-            joltVertices, joltTriangleList
+            std::move(joltVertices), std::move(joltTriangleList)
         };
 
         JPH::ShapeSettings::ShapeResult shapeResult = meshShapeSettings.Create();
-
         if (shapeResult.HasError())
         {
-            std::cout << "Failed to create shape!" << "\n";
+            spdlog::error("Error Creating shape!", shapeResult.GetError());
+            continue;
         }
         shapeSettings.AddShape(JPH::Vec3::sZero(), JPH::Quat::sIdentity(),
                                shapeResult.Get());

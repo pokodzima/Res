@@ -6,6 +6,7 @@
 #include <Jolt/Geometry/IndexedTriangle.h>
 
 #include <cstdarg>
+#include <cstdio>
 #include <iostream>
 
 namespace JPH
@@ -28,7 +29,7 @@ namespace res
     {
         static constexpr JPH::BroadPhaseLayer NON_MOVING(0);
         static constexpr JPH::BroadPhaseLayer MOVING(1);
-        static constexpr JPH::uint NUM_LAYERS(2);
+        static constexpr JPH::uint NUM_LAYERS = 2;
     }
 
     static void TraceImpl(const char* inFMT, ...)

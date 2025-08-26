@@ -59,6 +59,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(rlImGui)
 
+# Include spdlog
+FetchContent_Declare(
+        spdlog
+        GIT_REPOSITORY "https://github.com/gabime/spdlog"
+        GIT_TAG "v1.15.3"
+)
+FetchContent_MakeAvailable(spdlog)
+
 set(SOURCES
         src/TransformComponents.h
         src/Window.h
@@ -111,4 +119,4 @@ target_include_directories(${PROJECT_NAME} PUBLIC
         ${rlimgui_SOURCE_DIR}
 )
 
-target_link_libraries(${PROJECT_NAME} PUBLIC raylib Jolt flecs::flecs_static)
+target_link_libraries(${PROJECT_NAME} PUBLIC raylib Jolt flecs::flecs_static spdlog)
