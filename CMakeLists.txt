@@ -33,7 +33,7 @@ FetchContent_MakeAvailable(JoltPhysics)
 FetchContent_Declare(
         flecs
         GIT_REPOSITORY "https://github.com/SanderMertens/flecs"
-        GIT_TAG "v4.1.0"
+        GIT_TAG "v4.1.1"
 )
 FetchContent_MakeAvailable(flecs)
 
