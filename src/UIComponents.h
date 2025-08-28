@@ -4,7 +4,7 @@ namespace res
 {
     struct TextElementComponent
     {
-        int fontSize;
+        int fontSize{10};
     };
 
     struct Renderable2dComponent
@@ -13,12 +13,11 @@ namespace res
 
     struct Position2dComponent
     {
-        float x;
-        float y;
+        float x{0.0f};
+        float y{0.0f};
     };
 
     struct ImageElementComponent
     {
-        
     };
 }

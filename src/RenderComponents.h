@@ -19,6 +19,9 @@ namespace res
 
     struct SpherePrimitiveComponent
     {
+    };
 
+    struct CapsulePrimitiveComponent
+    {
     };
 }

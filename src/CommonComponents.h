@@ -12,6 +12,11 @@ namespace res
 
     struct ColorComponent
     {
-        Color color;
+        Color color{WHITE};
+    };
+
+    struct PlayerComponent
+    {
+
     };
 }

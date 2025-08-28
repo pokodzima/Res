@@ -25,6 +25,7 @@
 
 #include <iostream>
 
+#include "InputComponents.h"
 #include "spdlog/spdlog.h"
 
 
@@ -199,9 +200,11 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
                                                  JPH::Quat::sIdentity(), GetFrameTime());
          });
 
-    world.system<const CharacterControllerComponent, const PhysicsBodyIdComponent>("Move character with keys")
+    world.system<const MovementInputComponent, const CharacterControllerComponent, const PhysicsBodyIdComponent>(
+             "Apply Character Movement Input")
          .kind(onTickPhase)
-         .each([&world](const CharacterControllerComponent& characterComponent,
+         .each([&world](const MovementInputComponent& movementInputComponent,
+                        const CharacterControllerComponent& characterComponent,
                         const PhysicsBodyIdComponent& bodyIdHolder)
          {
              if (bodyIdHolder.bodyID.IsInvalid())
@@ -210,7 +213,8 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
                  return;
              }
              auto& handle = world.get<PhysicsHandleComponent>();
-             auto movement = JPH::Vec3((float)IsKeyDown(KEY_W) * 10.0f - (float)IsKeyDown(KEY_S) * 10.0f, 0.0f, 0.0f);
+             auto movement = JPH::Vec3(movementInputComponent.input.x * 5.0f, 0.0f,
+                                       movementInputComponent.input.y * 5.0f);
              handle.bodyInterface->SetLinearVelocity(bodyIdHolder.bodyID, movement);
          });
 

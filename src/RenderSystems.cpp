@@ -76,10 +76,22 @@ res::RenderSystems::RenderSystems(flecs::world& world)
 
     world.system<const RenderableComponent, const SpherePrimitiveComponent, const MatrixComponent>("Draw Spheres")
          .kind(OnRender3DPhase)
-         .each([](const RenderableComponent& r, const SpherePrimitiveComponent& rlSphere, const MatrixComponent matrix)
+         .each([](const RenderableComponent& r, const SpherePrimitiveComponent& spherePrimitiveComponent,
+                  const MatrixComponent matrix)
          {
              DrawSphere(GetPositionFromMatrix(matrix.matrix), 0.5f,RED);
-             DrawGrid(20, 0.5);
+         });
+
+    world.system<const RenderableComponent, const CapsulePrimitiveComponent, const MatrixComponent>("Draw Capsules")
+         .kind(OnRender3DPhase)
+         .each([](const RenderableComponent& r, const CapsulePrimitiveComponent& capsulePrimitiveComponent,
+                  const MatrixComponent matrix)
+         {
+             auto startPosition = GetPositionFromMatrix(matrix.matrix);
+             startPosition.y -= 1.0f;
+             auto endPosition = startPosition;
+             endPosition.y += 2.0f;
+             DrawCapsule(startPosition, endPosition, 0.5f, 8, 8, RED);
          });
 
     world.system<CameraComponent, const MatrixComponent>()

@@ -90,6 +90,9 @@ set(SOURCES
         src/UIComponents.h
         src/UISystems.h
         src/UISystems.cpp
+        src/InputComponents.h
+        src/InputSystems.h
+        src/InputSystems.cpp
 )
 
 set(IMGUI_SOURCES

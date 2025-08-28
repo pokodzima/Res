@@ -11,6 +11,8 @@
 
 #include <cassert>
 
+#include "InputComponents.h"
+
 
 res::DebugSystems::DebugSystems(flecs::world& world)
 {
@@ -34,7 +36,9 @@ res::DebugSystems::DebugSystems(flecs::world& world)
                  if (const auto matrixComponent = character.try_get<MatrixComponent>())
                  {
                      const auto [x, y, z] = GetPositionFromMatrix(matrixComponent->matrix);
-                     ImGui::Text("%f,%f,%f", x, y, z);
+                     const auto input = character.get<MovementInputComponent>().input;
+                     ImGui::Text("Player Position: %f,%f,%f", x, y, z);
+                     ImGui::Text("Movement Input: %f,%f", input.x, input.y);
                  }
                  else
                  {
