@@ -2,22 +2,22 @@
 
 namespace res
 {
-    struct cTextElement
+    struct TextElementComponent
     {
         int fontSize;
     };
 
-    struct cRenderable2D
+    struct Renderable2dComponent
     {
     };
 
-    struct cPosition2D
+    struct Position2dComponent
     {
         float x;
         float y;
     };
 
-    struct cImageElement
+    struct ImageElementComponent
     {
         
     };

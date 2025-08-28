@@ -31,7 +31,7 @@ res::DebugSystems::DebugSystems(flecs::world& world)
              const auto character = world.lookup("Character");
              if (character.is_alive())
              {
-                 if (const auto matrixComponent = character.try_get<cMatrix>())
+                 if (const auto matrixComponent = character.try_get<MatrixComponent>())
                  {
                      const auto [x, y, z] = GetPositionFromMatrix(matrixComponent->matrix);
                      ImGui::Text("%f,%f,%f", x, y, z);
@@ -49,9 +49,9 @@ res::DebugSystems::DebugSystems(flecs::world& world)
              rlImGuiEnd();
          });
 
-    world.system<cCamera>("Debug Camera Movement")
+    world.system<CameraComponent>("Debug Camera Movement")
          .kind(onPreRenderPhase)
-         .each([](cCamera& c)
+         .each([](CameraComponent& c)
          {
              //     UpdateCamera(&c.raylibCamera, CAMERA_FREE);
          });

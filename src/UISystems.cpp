@@ -1,12 +1,12 @@
 #include "UISystems.h"
 
-#include "DataComponents.h"
+#include "CommonComponents.h"
+#include "Phases.h"
+#include "UIComponents.h"
 
 #include <flecs.h>
+#include <raylib.h>
 
-#include "Phases.h"
-#include "raylib.h"
-#include "UIComponents.h"
 
 res::UISystems::UISystems(flecs::world& world)
 {
@@ -14,11 +14,12 @@ res::UISystems::UISystems(flecs::world& world)
 
     auto OnRender2DPhase = world.lookup(res::OnRender2DPhaseName.data());
 
-    world.system<const TextComponent, const cPosition2D, const cRenderable2D, const cTextElement, const ColorComponent>(
+    world.system<const TextComponent, const Position2dComponent, const Renderable2dComponent, const TextElementComponent
+                 , const ColorComponent>(
              "Render UI Text")
          .kind(OnRender2DPhase)
-         .each([](const TextComponent& textComponent, const cPosition2D& positionComponent,
-                  const cRenderable2D& renderableComponent, const cTextElement& elementComponent,
+         .each([](const TextComponent& textComponent, const Position2dComponent& positionComponent,
+                  const Renderable2dComponent& renderableComponent, const TextElementComponent& elementComponent,
                   const ColorComponent& colorComponent)
          {
              DrawText(textComponent.textString.c_str(), (int)positionComponent.x, (int)positionComponent.y,

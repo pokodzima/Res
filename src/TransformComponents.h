@@ -3,39 +3,8 @@
 
 namespace res
 {
-    struct cPosition
-    {
-        float x, y, z;
-    };
-
-    struct cRotation
-    {
-        float x, y, z, w;
-    };
-
-    struct cScale
-    {
-        float x, y, z;
-    };
-
-    struct cMatrix
+    struct MatrixComponent
     {
         Matrix matrix;
-    };
-
-    struct cRebuildMatrix
-    {
-    };
-
-    struct cUpdatePositionFromMatrix
-    {
-    };
-
-    struct cUpdateRotationFromMatrix
-    {
-    };
-
-    struct cUpdateScaleFromMatrix
-    {
     };
 }

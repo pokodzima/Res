@@ -10,7 +10,7 @@
 
 namespace res
 {
-    struct sPhysicsHandle
+    struct PhysicsHandleComponent
     {
         std::unique_ptr<BPLayerInterfaceImpl> broadPhaseLayerInterface;
         std::unique_ptr<ObjectVsBroadPhaseLayerFilterImpl> objectVsBroadPhaseLayerFilter;
@@ -18,29 +18,29 @@ namespace res
         std::unique_ptr<JPH::PhysicsSystem> physicsSystem;
         std::unique_ptr<JPH::TempAllocatorImpl> tempAllocator;
         std::unique_ptr<JPH::JobSystemThreadPool> jobSystem;
-        JPH::BodyInterface* bodyInterface{};
+        JPH::BodyInterface* bodyInterface{nullptr};
     };
 
-    struct cPhysicsBall
+    struct RigidbodySphereComponent
     {
     };
 
-    struct cPhysicsBodyID
+    struct PhysicsBodyIdComponent
     {
-        JPH::BodyID bodyID;
+        JPH::BodyID bodyID{};
     };
 
-    struct cMeshCollider
+    struct MeshColliderComponent
     {
     };
 
-    struct cCharacterCapsule
+    struct CharacterControllerComponent
     {
-        float characterHeight;
-        float characterRadius;
+        float characterHeight = 2.0f;
+        float characterRadius = 0.5f;
     };
 
-    struct cGravity
+    struct GravityComponent
     {
         JPH::Vec3 gravityForce = JPH::Vec3(0.0f, -9.8f, 0.0f);
     };
@@ -51,7 +51,7 @@ namespace res
         {
             world.module<PhysicsComponents>();
 
-            world.add<sPhysicsHandle>();
+            world.add<PhysicsHandleComponent>();
         }
     };
 }

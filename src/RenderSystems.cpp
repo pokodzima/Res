@@ -21,6 +21,14 @@ res::RenderSystems::RenderSystems(flecs::world& world)
     auto OnRender3DPhase = world.lookup(OnRender3DPhaseName.data());
     auto OnBeginPhase = world.lookup(OnBeginPhaseName.data());
 
+    assert(OnPreRenderPhase != 0 && "OnPreRenderPhase not found!");
+    assert(OnPreRender3DPhase != 0 && "OnPreRender3DPhase not found!");
+    assert(OnPostRender3DPhase != 0 && "OnPostRender3DPhase not found!");
+    assert(OnRender2DPhase != 0 && "OnRender2DPhase not found!");
+    assert(OnPostRenderPhase != 0 && "OnPostRenderPhase not found!");
+    assert(OnRender3DPhase != 0 && "OnRender3DPhase not found!");
+    assert(OnBeginPhase != 0 && "OnBeginPhase not found!");
+
 
     world.system("Begin Render")
          .kind(OnPreRenderPhase)
@@ -30,9 +38,9 @@ res::RenderSystems::RenderSystems(flecs::world& world)
              ClearBackground(WHITE);
          });
 
-    world.system<const cCamera>("Begin Render3D")
+    world.system<const CameraComponent>("Begin Render3D")
          .kind(OnPreRender3DPhase)
-         .each([](const cCamera& c)
+         .each([](const CameraComponent& c)
          {
              const auto camera = c.raylibCamera;
              BeginMode3D(camera);
@@ -59,24 +67,24 @@ res::RenderSystems::RenderSystems(flecs::world& world)
              EndDrawing();
          });
 
-    world.system<const cRenderable, const cModel, const cMatrix>("Render Models")
+    world.system<const RenderableComponent, const ModelComponent, const MatrixComponent>("Render Models")
          .kind(OnRender3DPhase)
-         .each([](const cRenderable& r, const cModel& mh, const cMatrix matrix)
+         .each([](const RenderableComponent& r, const ModelComponent& mh, const MatrixComponent matrix)
          {
              DrawModel(mh.model, GetPositionFromMatrix(matrix.matrix), 1.0f, WHITE);
          });
 
-    world.system<const cRenderable, const cRlSphere, const cMatrix>("Draw Spheres")
+    world.system<const RenderableComponent, const SpherePrimitiveComponent, const MatrixComponent>("Draw Spheres")
          .kind(OnRender3DPhase)
-         .each([](const cRenderable& r, const cRlSphere& rlSphere, const cMatrix matrix)
+         .each([](const RenderableComponent& r, const SpherePrimitiveComponent& rlSphere, const MatrixComponent matrix)
          {
              DrawSphere(GetPositionFromMatrix(matrix.matrix), 0.5f,RED);
              DrawGrid(20, 0.5);
          });
 
-    world.system<cCamera, const cMatrix>()
+    world.system<CameraComponent, const MatrixComponent>()
          .kind(OnBeginPhase)
-         .each([](cCamera& cameraComponent, const cMatrix& matrixComponent)
+         .each([](CameraComponent& cameraComponent, const MatrixComponent& matrixComponent)
          {
              return;
              cameraComponent.raylibCamera.position = GetPositionFromMatrix(matrixComponent.matrix);

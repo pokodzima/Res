@@ -16,7 +16,7 @@ namespace JPH
 
 namespace res
 {
-    struct cModel;
+    struct ModelComponent;
 
     namespace PhysicsObjectLayers
     {
@@ -113,5 +113,5 @@ namespace res
     void PopulateJoltVertices(const float* rlVertices, int vertexCount, JPH::VertexList& joltVertices);
     void PopulateJoltTriangles(const unsigned short* rlIndices, int triangleCount,
                                JPH::IndexedTriangleList& joltTriangles);
-    void AssembleStaticCompoundShape(JPH::StaticCompoundShapeSettings& shapeSettings, const cModel& modelComponent);
+    void AssembleStaticCompoundShape(JPH::StaticCompoundShapeSettings& shapeSettings, const ModelComponent& modelComponent);
 }

@@ -77,7 +77,7 @@ void res::PopulateJoltTriangles(const unsigned short* rlIndices, const int trian
     }
 }
 
-void res::AssembleStaticCompoundShape(JPH::StaticCompoundShapeSettings& shapeSettings, const cModel& modelComponent)
+void res::AssembleStaticCompoundShape(JPH::StaticCompoundShapeSettings& shapeSettings, const ModelComponent& modelComponent)
 {
     for (int meshIndex = 0; meshIndex < modelComponent.model.meshCount; ++meshIndex)
     {

@@ -1,11 +1,11 @@
 #include "PhysicsSystems.h"
 
-#include "PhysicsComponents.h"
 #include "JoltUtils.h"
 #include "MathUtils.h"
+#include "Phases.h"
+#include "PhysicsComponents.h"
 #include "RenderComponents.h"
 #include "TransformComponents.h"
-#include "Phases.h"
 
 #include <flecs.h>
 #include <Jolt/Jolt.h>
@@ -16,15 +16,17 @@
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
-#include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
+#include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Collision/Shape/StaticCompoundShape.h>
+#include <Jolt/Physics/Character/Character.h>
+#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
+#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 
 #include <iostream>
 
-#include "Jolt/Physics/Character/Character.h"
-#include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
-#include "Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h"
+#include "spdlog/spdlog.h"
+
 
 using namespace JPH::literals;
 
@@ -32,9 +34,13 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
 {
     world.module<PhysicsSystems>();
 
-    world.observer<sPhysicsHandle>("Initialize Physics System")
+    const auto onTickPhase = world.lookup(OnTickPhaseName.data());
+
+    assert(onTickPhase != 0 && "Tick Phase not found!");
+
+    world.observer<PhysicsHandleComponent>("Initialize Physics System")
          .event(flecs::OnAdd)
-         .each([](flecs::entity e, sPhysicsHandle& handle)
+         .each([](flecs::entity e, PhysicsHandleComponent& handle)
          {
              JPH::RegisterDefaultAllocator();
 
@@ -67,26 +73,28 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
              handle.bodyInterface = &handle.physicsSystem->GetBodyInterface();
          });
 
-    world.observer<sPhysicsHandle>("Deinitialize Physics System")
+    world.observer<PhysicsHandleComponent>("Deinitialize Physics System")
          .event(flecs::OnRemove)
-         .each([](flecs::entity e, sPhysicsHandle& handle)
+         .each([](flecs::entity e, PhysicsHandleComponent& handle)
          {
              JPH::UnregisterTypes();
              delete JPH::Factory::sInstance;
              JPH::Factory::sInstance = nullptr;
          });
 
-    world.observer<cModel, cPhysicsBodyID, cMatrix, cMeshCollider>("Create StaticMesh Body")
+    world.observer<ModelComponent, PhysicsBodyIdComponent, MatrixComponent, MeshColliderComponent>(
+             "Create StaticMesh Body")
          .event(flecs::OnAdd)
-         .each([&world](const cModel& modelComponent, cPhysicsBodyID& bodyIdHolder, cMatrix& matrixComponent,
-                        const cMeshCollider& meshColliderComponent)
+         .each([&world](const ModelComponent& modelComponent, PhysicsBodyIdComponent& bodyIdHolder,
+                        MatrixComponent& matrixComponent,
+                        const MeshColliderComponent& meshColliderComponent)
              {
                  JPH::StaticCompoundShapeSettings staticCompoundShapeSettings{};
                  AssembleStaticCompoundShape(staticCompoundShapeSettings, modelComponent);
                  JPH::ShapeSettings::ShapeResult compoundShapeResult = staticCompoundShapeSettings.Create();
                  if (compoundShapeResult.HasError())
                  {
-                     std::cout << "Failed to create compound shape!" << "\n";
+                     spdlog::error("Failed to create a compound shape!");
                  }
 
                  JPH::ShapeRefC meshShape = compoundShapeResult.Get();
@@ -99,31 +107,37 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
                      PhysicsObjectLayers::NON_MOVING
                  };
 
-                 auto& handle = world.get<sPhysicsHandle>();
+                 auto& handle = world.get<PhysicsHandleComponent>();
                  JPH::Body* body = handle.bodyInterface->CreateBody(bodySettings);
                  handle.bodyInterface->AddBody(body->GetID(), JPH::EActivation::DontActivate);
                  bodyIdHolder.bodyID = body->GetID();
              }
          );
 
-    world.observer<cPhysicsBodyID>("Clear BodyID")
+    world.observer<PhysicsBodyIdComponent>("Clear BodyID")
          .event(flecs::OnRemove)
-         .each([&world](cPhysicsBodyID& bodyIdHolder)
+         .each([&world](PhysicsBodyIdComponent& bodyIdHolder)
          {
              if (bodyIdHolder.bodyID.IsInvalid())
              {
+                 spdlog::error("Body Id is invalid!");
                  return;
              }
-             auto& handle = world.get<sPhysicsHandle>();
+             auto& handle = world.get<PhysicsHandleComponent>();
              handle.bodyInterface->RemoveBody(bodyIdHolder.bodyID);
              handle.bodyInterface->DestroyBody(bodyIdHolder.bodyID);
          });
 
-    world.observer<const cPhysicsBall, cPhysicsBodyID>("Create Physics Ball")
+    world.observer<const RigidbodySphereComponent, PhysicsBodyIdComponent>("Create Physics Ball")
          .event(flecs::OnAdd)
-         .each([&world](const cPhysicsBall& body, cPhysicsBodyID& bodyIdHolder)
+         .each([&world](const RigidbodySphereComponent& body, PhysicsBodyIdComponent& bodyIdHolder)
          {
-             auto& handle = world.get<sPhysicsHandle>();
+             if (bodyIdHolder.bodyID.IsInvalid())
+             {
+                 spdlog::error("Body Id is invalid!");
+                 return;
+             }
+             auto& handle = world.get<PhysicsHandleComponent>();
              JPH::BodyCreationSettings sphereSettings(new JPH::SphereShape(0.5f),
                                                       JPH::RVec3(0.0_r, 5.0_r, 0.0_r),
                                                       JPH::Quat::sIdentity(),
@@ -139,23 +153,23 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
              handle.bodyInterface->SetLinearVelocity(bodyIdHolder.bodyID, JPH::Vec3(0.0f, -1.0f, 0.0f));
          });
 
-    world.observer<const cCharacterCapsule, cPhysicsBodyID>("Create Character Capsule")
+    world.observer<const CharacterControllerComponent, PhysicsBodyIdComponent>("Create Character Capsule")
          .event(flecs::OnSet)
-         .each([&world](const cCharacterCapsule& characterCapsule, cPhysicsBodyID& bodyIdHolder)
+         .each([&world](const CharacterControllerComponent& characterCapsule, PhysicsBodyIdComponent& bodyIdHolder)
          {
-             auto& handle = world.get<sPhysicsHandle>();
+             auto& handle = world.get<PhysicsHandleComponent>();
 
-             JPH::RefConst<JPH::Shape> capsuleShape = JPH::RotatedTranslatedShapeSettings(
-                                                          JPH::Vec3(
-                                                              0, 0.5f * characterCapsule.characterHeight +
-                                                              characterCapsule.characterRadius,
-                                                              0),
-                                                          JPH::Quat::sIdentity(),
-                                                          new JPH::CapsuleShape(0.5f * characterCapsule.characterHeight,
-                                                              characterCapsule.characterRadius)).
-                                                      Create().Get();
+             JPH::RefConst capsuleShape = JPH::RotatedTranslatedShapeSettings(
+                                              JPH::Vec3(
+                                                  0, 0.5f * characterCapsule.characterHeight +
+                                                  characterCapsule.characterRadius,
+                                                  0),
+                                              JPH::Quat::sIdentity(),
+                                              new JPH::CapsuleShape(0.5f * characterCapsule.characterHeight,
+                                                                    characterCapsule.characterRadius)).
+                                          Create().Get();
 
-             JPH::Ref<JPH::CharacterSettings> characterSettings = new JPH::CharacterSettings();
+             JPH::Ref characterSettings = new JPH::CharacterSettings();
              characterSettings->mMaxSlopeAngle = 45.0f;
              characterSettings->mLayer = PhysicsObjectLayers::MOVING;
              characterSettings->mShape = capsuleShape;
@@ -167,13 +181,17 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
              character->AddToPhysicsSystem(JPH::EActivation::Activate);
          });
 
-    const auto onTickPhase = world.lookup(OnTickPhaseName.data());
 
-    world.system<const cGravity, cPhysicsBodyID>("Apply Gravity")
+    world.system<const GravityComponent, PhysicsBodyIdComponent>("Apply Gravity")
          .kind(onTickPhase)
-         .each([&world](const cGravity& gravityComponent, cPhysicsBodyID& bodyIdHolder)
+         .each([&world](const GravityComponent& gravityComponent, PhysicsBodyIdComponent& bodyIdHolder)
          {
-             auto& handle = world.get<sPhysicsHandle>();
+             if (bodyIdHolder.bodyID.IsInvalid())
+             {
+                 spdlog::error("Body Id is invalid! System: Apply Gravity");
+                 return;
+             }
+             auto& handle = world.get<PhysicsHandleComponent>();
 
              auto currentPos = handle.bodyInterface->GetCenterOfMassPosition(bodyIdHolder.bodyID);
              handle.bodyInterface->MoveKinematic(bodyIdHolder.bodyID,
@@ -181,11 +199,17 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
                                                  JPH::Quat::sIdentity(), GetFrameTime());
          });
 
-    world.system<const cCharacterCapsule, const cPhysicsBodyID>("Move character with keys")
+    world.system<const CharacterControllerComponent, const PhysicsBodyIdComponent>("Move character with keys")
          .kind(onTickPhase)
-         .each([&world](const cCharacterCapsule& characterComponent, const cPhysicsBodyID& bodyIdHolder)
+         .each([&world](const CharacterControllerComponent& characterComponent,
+                        const PhysicsBodyIdComponent& bodyIdHolder)
          {
-             auto& handle = world.get<sPhysicsHandle>();
+             if (bodyIdHolder.bodyID.IsInvalid())
+             {
+                 spdlog::error("Body Id is invalid! System:Move Character with keys");
+                 return;
+             }
+             auto& handle = world.get<PhysicsHandleComponent>();
              auto movement = JPH::Vec3((float)IsKeyDown(KEY_W) * 10.0f - (float)IsKeyDown(KEY_S) * 10.0f, 0.0f, 0.0f);
              handle.bodyInterface->SetLinearVelocity(bodyIdHolder.bodyID, movement);
          });
@@ -195,22 +219,22 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
          .kind(onTickPhase)
          .run([&world](flecs::iter& it)
          {
-             auto& handle = world.get<sPhysicsHandle>();
+             auto& handle = world.get<PhysicsHandleComponent>();
              handle.physicsSystem->Update(GetFrameTime(), 1, handle.tempAllocator.get(),
                                           handle.jobSystem.get());
          });
 
-    world.system<const cPhysicsBodyID, cMatrix>("Move Physics Body")
+    world.system<const PhysicsBodyIdComponent, MatrixComponent>("Move Physics Body")
          .kind(onTickPhase)
-         .each([&world](const cPhysicsBodyID& pb, cMatrix& matrix)
+         .each([&world](const PhysicsBodyIdComponent& bodyIdComponent, MatrixComponent& matrix)
          {
-             if (pb.bodyID.IsInvalid())
+             if (bodyIdComponent.bodyID.IsInvalid())
              {
-                 std::cout << "body id is invalid" << "\n";
+                 spdlog::error("Body Id is invalid! system: Move Physics Body");
                  return;
              }
-             auto& handle = world.get<sPhysicsHandle>();
-             auto pos = handle.bodyInterface->GetCenterOfMassPosition(pb.bodyID);
+             auto& handle = world.get<PhysicsHandleComponent>();
+             auto pos = handle.bodyInterface->GetCenterOfMassPosition(bodyIdComponent.bodyID);
              matrix.matrix = MatrixTranslate(pos.GetX(), pos.GetY(), pos.GetZ());
          });
 }

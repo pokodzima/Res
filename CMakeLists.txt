@@ -72,7 +72,6 @@ set(SOURCES
         src/Window.h
         src/Window.cpp
         src/RenderComponents.h
-        src/HelperComponents.h
         src/Phases.h
         src/Phases.cpp
         src/RenderSystems.h
@@ -87,7 +86,7 @@ set(SOURCES
         src/PhysicsComponents.h
         src/JoltUtils.h
         src/JoltUtils.cpp
-        src/DataComponents.h
+        src/CommonComponents.h
         src/UIComponents.h
         src/UISystems.h
         src/UISystems.cpp

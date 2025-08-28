@@ -3,21 +3,21 @@
 
 namespace res
 {
-    struct cRenderable
+    struct RenderableComponent
     {
     };
 
-    struct cModel
+    struct ModelComponent
     {
         Model model;
     };
 
-    struct cCamera
+    struct CameraComponent
     {
         Camera3D raylibCamera;
     };
 
-    struct cRlSphere
+    struct SpherePrimitiveComponent
     {
 
     };
