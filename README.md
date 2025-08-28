@@ -13,7 +13,7 @@ A small, experimental C++20 game engine prototype built around an ECS architectu
 ## Tech stack
 - raylib 5.5
 - Jolt Physics v5.3.0
-- flecs v4.1.0
+- flecs v4.1.1
 - Dear ImGui v1.92.2 + rlImGui
 
 All third‑party libraries are fetched and built automatically by CMake; no manual installs are required beyond standard toolchains and platform SDKs.
