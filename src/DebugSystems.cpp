@@ -31,7 +31,7 @@ res::DebugSystems::DebugSystems(flecs::world& world)
              rlImGuiBegin();
 
              const auto character = world.lookup("Character");
-             if (character.is_alive())
+             if (character != 0 && character.is_alive())
              {
                  if (const auto matrixComponent = character.try_get<MatrixComponent>())
                  {
@@ -51,12 +51,5 @@ res::DebugSystems::DebugSystems(flecs::world& world)
              }
 
              rlImGuiEnd();
-         });
-
-    world.system<CameraComponent>("Debug Camera Movement")
-         .kind(onPreRenderPhase)
-         .each([](CameraComponent& c)
-         {
-             //     UpdateCamera(&c.raylibCamera, CAMERA_FREE);
          });
 }

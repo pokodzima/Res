@@ -1,27 +1,23 @@
 #pragma once
 #include "raylib.h"
 
-namespace res
-{
-    struct RenderableComponent
-    {
-    };
+namespace res {
+struct RenderableComponent {};
 
-    struct ModelComponent
-    {
-        Model model;
-    };
+struct ModelComponent {
+  Model model;
+};
 
-    struct CameraComponent
-    {
-        Camera3D raylibCamera;
-    };
+struct CameraComponent {
+  Camera3D raylibCamera;
+};
 
-    struct SpherePrimitiveComponent
-    {
-    };
+struct SpherePrimitiveComponent {};
 
-    struct CapsulePrimitiveComponent
-    {
-    };
-}
+struct CapsulePrimitiveComponent {};
+
+struct GridPrimitiveComponent {
+  int slices;
+  float spacing;
+};
+} // namespace res
