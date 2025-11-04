@@ -14,7 +14,7 @@ res::InputSystems::InputSystems(flecs::world& world)
 {
     world.module<InputSystems>();
 
-    auto on_tick_phase = world.lookup(OnTickPhaseName.data());
+    auto on_tick_phase = world.lookup(kTickPhaseName.data());
 
     assert(on_tick_phase != 0 && "OnTickPhase not found");
 

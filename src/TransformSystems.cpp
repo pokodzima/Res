@@ -9,7 +9,7 @@
 res::TransformSystems::TransformSystems(flecs::world &world) {
   world.module<TransformSystems>();
 
-  auto on_pre_render_phase = world.lookup(OnPreRenderPhaseName.data());
+  auto on_pre_render_phase = world.lookup(kPreRenderPhaseName.data());
 
   world
       .system<const DebugCameraMovementComponent, CameraComponent>(

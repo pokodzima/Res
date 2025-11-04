@@ -12,7 +12,7 @@ res::UISystems::UISystems(flecs::world& world)
 {
     world.module<UISystems>();
 
-    auto on_render_2d_phase = world.lookup(res::OnRender2DPhaseName.data());
+    auto on_render_2d_phase = world.lookup(res::kRender2DPhaseName.data());
 
     world.system<const TextComponent, const Position2dComponent, const Renderable2dComponent, const TextElementComponent
                  , const ColorComponent>(

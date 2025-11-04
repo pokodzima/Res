@@ -12,13 +12,13 @@
 res::RenderSystems::RenderSystems(flecs::world &world) {
   world.module<RenderSystems>();
 
-  auto on_pre_render_phase = world.lookup(OnPreRenderPhaseName.data());
-  auto on_pre_render_3d_phase = world.lookup(OnPreRender3DPhaseName.data());
-  auto on_post_render_3d_phase = world.lookup(OnPostRender3DPhaseName.data());
-  auto on_render_2d_phase = world.lookup(OnRender2DPhaseName.data());
-  auto on_post_render_phase = world.lookup(OnPostRenderPhaseName.data());
-  auto on_render_3d_phase = world.lookup(OnRender3DPhaseName.data());
-  auto on_begin_phase = world.lookup(OnBeginPhaseName.data());
+  auto on_pre_render_phase = world.lookup(kPreRenderPhaseName.data());
+  auto on_pre_render_3d_phase = world.lookup(kPreRender3DPhaseName.data());
+  auto on_post_render_3d_phase = world.lookup(kPostRender3DPhaseName.data());
+  auto on_render_2d_phase = world.lookup(kRender2DPhaseName.data());
+  auto on_post_render_phase = world.lookup(kPostRenderPhaseName.data());
+  auto on_render_3d_phase = world.lookup(kRender3DPhaseName.data());
+  auto on_begin_phase = world.lookup(kBeginPhaseName.data());
 
   assert(on_pre_render_phase != 0 && "OnPreRenderPhase not found!");
   assert(on_pre_render_3d_phase != 0 && "OnPreRender3DPhase not found!");

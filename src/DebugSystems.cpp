@@ -18,8 +18,8 @@ res::DebugSystems::DebugSystems(flecs::world& world)
 {
     world.module<DebugSystems>();
 
-    auto on_render_2d_phase = world.lookup(OnRender2DPhaseName.data());
-    auto on_pre_render_phase = world.lookup(OnPreRenderPhaseName.data());
+    auto on_render_2d_phase = world.lookup(kRender2DPhaseName.data());
+    auto on_pre_render_phase = world.lookup(kPreRenderPhaseName.data());
 
     assert(on_render_2d_phase != 0 && "OnRender2DPhase not found");
     assert(on_pre_render_phase != 0 && "OnPreRenderPhase not found");
