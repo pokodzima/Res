@@ -9,7 +9,7 @@ struct ModelComponent {
 };
 
 struct CameraComponent {
-  Camera3D raylibCamera;
+  Camera3D camera;
 };
 
 struct SpherePrimitiveComponent {};

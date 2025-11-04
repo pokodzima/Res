@@ -9,14 +9,14 @@
 res::TransformSystems::TransformSystems(flecs::world &world) {
   world.module<TransformSystems>();
 
-  auto OnPreRenderPhase = world.lookup(OnPreRenderPhaseName.data());
+  auto on_pre_render_phase = world.lookup(OnPreRenderPhaseName.data());
 
   world
       .system<const DebugCameraMovementComponent, CameraComponent>(
           "Debug Camera Movement")
-      .kind(OnPreRenderPhase)
-      .each([](const DebugCameraMovementComponent &dcmc,
-               CameraComponent &camera) {
-        UpdateCamera(&camera.raylibCamera, dcmc.debug_movement_type);
+      .kind(on_pre_render_phase)
+      .each([](const DebugCameraMovementComponent &debug_movement,
+               CameraComponent &camera_component) {
+        UpdateCamera(&camera_component.camera, debug_movement.movement_type);
       });
 }

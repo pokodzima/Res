@@ -18,14 +18,14 @@ res::DebugSystems::DebugSystems(flecs::world& world)
 {
     world.module<DebugSystems>();
 
-    auto onRender2DPhase = world.lookup(OnRender2DPhaseName.data());
-    auto onPreRenderPhase = world.lookup(OnPreRenderPhaseName.data());
+    auto on_render_2d_phase = world.lookup(OnRender2DPhaseName.data());
+    auto on_pre_render_phase = world.lookup(OnPreRenderPhaseName.data());
 
-    assert(onRender2DPhase != 0 && "OnRender2DPhase not found");
-    assert(onPreRenderPhase != 0 && "OnPreRenderPhase not found");
+    assert(on_render_2d_phase != 0 && "OnRender2DPhase not found");
+    assert(on_pre_render_phase != 0 && "OnPreRenderPhase not found");
 
     world.system("Render ImGui")
-         .kind(onRender2DPhase)
+         .kind(on_render_2d_phase)
          .run([&world](flecs::iter it)
          {
              rlImGuiBegin();
@@ -33,9 +33,9 @@ res::DebugSystems::DebugSystems(flecs::world& world)
              const auto character = world.lookup("Character");
              if (character != 0 && character.is_alive())
              {
-                 if (const auto matrixComponent = character.try_get<MatrixComponent>())
+                 if (const auto matrix_component = character.try_get<MatrixComponent>())
                  {
-                     const auto [x, y, z] = GetPositionFromMatrix(matrixComponent->matrix);
+                     const auto [x, y, z] = GetPositionFromMatrix(matrix_component->matrix);
                      const auto input = character.get<MovementInputComponent>().input;
                      ImGui::Text("Player Position: %f,%f,%f", x, y, z);
                      ImGui::Text("Movement Input: %f,%f", input.x, input.y);

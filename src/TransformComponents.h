@@ -10,6 +10,6 @@ namespace res
     };
 
     struct DebugCameraMovementComponent {
-        int debug_movement_type;
+        int movement_type;
     };
 }
