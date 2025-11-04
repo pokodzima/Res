@@ -1,13 +1,13 @@
 #pragma once
 
-#include <Jolt/Jolt.h>
-#include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
-#include <Jolt/Physics/Collision/ObjectLayer.h>
-#include <Jolt/Geometry/IndexedTriangle.h>
-
 #include <cstdarg>
 #include <cstdio>
 #include <iostream>
+
+#include <Jolt/Jolt.h>
+#include <Jolt/Geometry/IndexedTriangle.h>
+#include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
+#include <Jolt/Physics/Collision/ObjectLayer.h>
 
 namespace JPH
 {

@@ -1,17 +1,16 @@
 #include "DebugSystems.h"
 
-#include "RenderComponents.h"
-#include "TransformComponents.h"
-#include "MathUtils.h"
-#include "PhysicsComponents.h"
-
-#include <rlImGui.h>
-#include <flecs.h>
-#include <imgui.h>
-
 #include <cassert>
 
+#include <flecs.h>
+#include <imgui.h>
+#include <rlImGui.h>
+
 #include "InputComponents.h"
+#include "MathUtils.h"
+#include "PhysicsComponents.h"
+#include "RenderComponents.h"
+#include "TransformComponents.h"
 
 
 res::DebugSystems::DebugSystems(flecs::world& world)

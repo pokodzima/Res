@@ -2,7 +2,6 @@
 
 #include "Phases.h"
 
-
 namespace res
 {
     struct TransformSystems

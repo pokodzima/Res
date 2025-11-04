@@ -1,6 +1,6 @@
 #pragma once
-#include "Phases.h"
 
+#include "Phases.h"
 
 namespace res
 {

@@ -1,11 +1,11 @@
 #include "UISystems.h"
 
+#include <flecs.h>
+#include <raylib.h>
+
 #include "CommonComponents.h"
 #include "Phases.h"
 #include "UIComponents.h"
-
-#include <flecs.h>
-#include <raylib.h>
 
 
 res::UISystems::UISystems(flecs::world& world)
