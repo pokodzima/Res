@@ -24,7 +24,7 @@ res::UISystems::UISystems(flecs::world& world)
          {
              DrawText(text_component.text.c_str(), static_cast<int>(position_component.x), 
                       static_cast<int>(position_component.y),
-                      element_component.fontSize,
+                      element_component.font_size,
                       color_component.color);
          });
 }

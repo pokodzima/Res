@@ -4,7 +4,7 @@ namespace res
 {
     struct TextElementComponent
     {
-        int fontSize{10};
+        int font_size{10};
     };
 
     struct Renderable2dComponent

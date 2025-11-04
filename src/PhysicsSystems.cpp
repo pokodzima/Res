@@ -52,8 +52,8 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
 
              JPH::RegisterTypes();
 
-             handle.tempAllocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024);
-             handle.jobSystem = std::make_unique<JPH::JobSystemThreadPool>(
+             handle.temp_allocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024);
+             handle.job_system = std::make_unique<JPH::JobSystemThreadPool>(
                  JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers,
                  std::thread::hardware_concurrency() - 1);
 
@@ -62,16 +62,16 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
              constexpr JPH::uint cMaxBodyPairs = 65536;
              constexpr JPH::uint cMaxContactConstraints = 10240;
 
-             handle.broadPhaseLayerInterface = std::make_unique<BPLayerInterfaceImpl>();
-             handle.objectVsBroadPhaseLayerFilter = std::make_unique<ObjectVsBroadPhaseLayerFilterImpl>();
-             handle.objectVsObjectLayerFilter = std::make_unique<ObjectLayerPairFilterImpl>();
+             handle.broad_phase_layer_interface = std::make_unique<BPLayerInterfaceImpl>();
+             handle.object_vs_broad_phase_layer_filter = std::make_unique<ObjectVsBroadPhaseLayerFilterImpl>();
+             handle.object_vs_object_layer_filter = std::make_unique<ObjectLayerPairFilterImpl>();
 
-             handle.physicsSystem = std::make_unique<JPH::PhysicsSystem>();
-             handle.physicsSystem->Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints,
-                                        *handle.broadPhaseLayerInterface, *handle.objectVsBroadPhaseLayerFilter,
-                                        *handle.objectVsObjectLayerFilter);
+             handle.physics_system = std::make_unique<JPH::PhysicsSystem>();
+             handle.physics_system->Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints,
+                                        *handle.broad_phase_layer_interface, *handle.object_vs_broad_phase_layer_filter,
+                                        *handle.object_vs_object_layer_filter);
 
-             handle.bodyInterface = &handle.physicsSystem->GetBodyInterface();
+             handle.body_interface = &handle.physics_system->GetBodyInterface();
          });
 
     world.observer<PhysicsHandleComponent>("Deinitialize Physics System")
@@ -109,9 +109,9 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
                  };
 
                  auto& handle = world.get<PhysicsHandleComponent>();
-                 JPH::Body* body = handle.bodyInterface->CreateBody(bodySettings);
-                 handle.bodyInterface->AddBody(body->GetID(), JPH::EActivation::DontActivate);
-                 bodyIdHolder.bodyID = body->GetID();
+                 JPH::Body* body = handle.body_interface->CreateBody(body_settings);
+                 handle.body_interface->AddBody(body->GetID(), JPH::EActivation::DontActivate);
+                 body_id_holder.body_id = body->GetID();
              }
          );
 
@@ -119,21 +119,21 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
          .event(flecs::OnRemove)
          .each([&world](PhysicsBodyIdComponent& body_id_holder)
          {
-             if (body_id_holder.bodyID.IsInvalid())
+             if (body_id_holder.body_id.IsInvalid())
              {
                  spdlog::error("Body Id is invalid!");
                  return;
              }
              auto& handle = world.get<PhysicsHandleComponent>();
-             handle.bodyInterface->RemoveBody(body_id_holder.bodyID);
-             handle.bodyInterface->DestroyBody(body_id_holder.bodyID);
+             handle.body_interface->RemoveBody(body_id_holder.body_id);
+             handle.body_interface->DestroyBody(body_id_holder.body_id);
          });
 
     world.observer<const RigidbodySphereComponent, PhysicsBodyIdComponent>("Create Physics Ball")
          .event(flecs::OnAdd)
          .each([&world](const RigidbodySphereComponent& rigidbody_sphere, PhysicsBodyIdComponent& body_id_holder)
          {
-             if (body_id_holder.bodyID.IsInvalid())
+             if (body_id_holder.body_id.IsInvalid())
              {
                  spdlog::error("Body Id is invalid!");
                  return;
@@ -152,12 +152,12 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
                                                       PhysicsObjectLayers::MOVING);
              sphere_settings.mRestitution = kRestitution;
              sphere_settings.mFriction = kFriction;
-             body_id_holder.bodyID = handle.bodyInterface->CreateAndAddBody(
+             body_id_holder.body_id = handle.body_interface->CreateAndAddBody(
                  sphere_settings, JPH::EActivation::Activate);
 
              // Now you can interact with the dynamic body, in this case we're going to give it a velocity.
              // (note that if we had used CreateBody then we could have set the velocity straight on the body before adding it to the physics system)
-             handle.bodyInterface->SetLinearVelocity(body_id_holder.bodyID, JPH::Vec3(0.0f, kInitialVelocityY, 0.0f));
+             handle.body_interface->SetLinearVelocity(body_id_holder.body_id, JPH::Vec3(0.0f, kInitialVelocityY, 0.0f));
          });
 
     world.observer<const CharacterControllerComponent, PhysicsBodyIdComponent>("Create Character Capsule")
@@ -171,12 +171,12 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
              
              JPH::RefConst capsule_shape = JPH::RotatedTranslatedShapeSettings(
                                               JPH::Vec3(
-                                                  0, 0.5f * character_capsule.characterHeight +
-                                                  character_capsule.characterRadius,
+                                                  0, 0.5f * character_capsule.character_height +
+                                                  character_capsule.character_radius,
                                                   0),
                                               JPH::Quat::sIdentity(),
-                                              new JPH::CapsuleShape(0.5f * character_capsule.characterHeight,
-                                                                    character_capsule.characterRadius)).
+                                              new JPH::CapsuleShape(0.5f * character_capsule.character_height,
+                                                                    character_capsule.character_radius)).
                                           Create().Get();
 
              JPH::Ref character_settings = new JPH::CharacterSettings();
@@ -184,10 +184,10 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
              character_settings->mLayer = PhysicsObjectLayers::MOVING;
              character_settings->mShape = capsule_shape;
              character_settings->mFriction = kCharacterFriction;
-             character_settings->mSupportingVolume = JPH::Plane(JPH::Vec3::sAxisY(), -character_capsule.characterRadius);
+             character_settings->mSupportingVolume = JPH::Plane(JPH::Vec3::sAxisY(), -character_capsule.character_radius);
              auto character = new JPH::Character(character_settings, JPH::Vec3::sZero(), JPH::Quat::sIdentity(), 0,
-                                                 handle.physicsSystem.get());
-             body_id_holder.bodyID = character->GetBodyID();
+                                                 handle.physics_system.get());
+             body_id_holder.body_id = character->GetBodyID();
              character->AddToPhysicsSystem(JPH::EActivation::Activate);
          });
 
@@ -196,16 +196,16 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
          .kind(on_tick_phase)
          .each([&world](const GravityComponent& gravity_component, PhysicsBodyIdComponent& body_id_holder)
          {
-             if (body_id_holder.bodyID.IsInvalid())
+             if (body_id_holder.body_id.IsInvalid())
              {
                  spdlog::error("Body Id is invalid! System: Apply Gravity");
                  return;
              }
              auto& handle = world.get<PhysicsHandleComponent>();
 
-             auto current_position = handle.bodyInterface->GetCenterOfMassPosition(body_id_holder.bodyID);
-             handle.bodyInterface->MoveKinematic(body_id_holder.bodyID,
-                                                 current_position + (gravity_component.gravityForce * GetFrameTime()),
+             auto current_position = handle.body_interface->GetCenterOfMassPosition(body_id_holder.body_id);
+             handle.body_interface->MoveKinematic(body_id_holder.body_id,
+                                                 current_position + (gravity_component.gravity_force * GetFrameTime()),
                                                  JPH::Quat::sIdentity(), GetFrameTime());
          });
 
@@ -216,7 +216,7 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
                         const CharacterControllerComponent& character_component,
                         const PhysicsBodyIdComponent& body_id_holder)
          {
-             if (body_id_holder.bodyID.IsInvalid())
+             if (body_id_holder.body_id.IsInvalid())
              {
                  spdlog::error("Body Id is invalid! System:Move Character with keys");
                  return;
@@ -225,7 +225,7 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
              constexpr float kMovementSpeed = 5.0f;
              auto movement = JPH::Vec3(movement_input_component.input.x * kMovementSpeed, 0.0f,
                                        movement_input_component.input.y * kMovementSpeed);
-             handle.bodyInterface->SetLinearVelocity(body_id_holder.bodyID, movement);
+             handle.body_interface->SetLinearVelocity(body_id_holder.body_id, movement);
          });
 
 
@@ -235,21 +235,21 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
          {
              auto& handle = world.get<PhysicsHandleComponent>();
              constexpr int kCollisionSteps = 1;
-             handle.physicsSystem->Update(GetFrameTime(), kCollisionSteps, handle.tempAllocator.get(),
-                                          handle.jobSystem.get());
+             handle.physics_system->Update(GetFrameTime(), kCollisionSteps, handle.temp_allocator.get(),
+                                          handle.job_system.get());
          });
 
     world.system<const PhysicsBodyIdComponent, MatrixComponent>("Move Physics Body")
          .kind(on_tick_phase)
          .each([&world](const PhysicsBodyIdComponent& body_id_component, MatrixComponent& matrix)
          {
-             if (body_id_component.bodyID.IsInvalid())
+             if (body_id_component.body_id.IsInvalid())
              {
                  spdlog::error("Body Id is invalid! system: Move Physics Body");
                  return;
              }
              auto& handle = world.get<PhysicsHandleComponent>();
-             auto position = handle.bodyInterface->GetCenterOfMassPosition(body_id_component.bodyID);
+             auto position = handle.body_interface->GetCenterOfMassPosition(body_id_component.body_id);
              matrix.matrix = MatrixTranslate(position.GetX(), position.GetY(), position.GetZ());
          });
 }
