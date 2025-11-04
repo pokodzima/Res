@@ -86,25 +86,25 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
     world.observer<ModelComponent, PhysicsBodyIdComponent, MatrixComponent, MeshColliderComponent>(
              "Create StaticMesh Body")
          .event(flecs::OnAdd)
-         .each([&world](const ModelComponent& modelComponent, PhysicsBodyIdComponent& bodyIdHolder,
-                        MatrixComponent& matrixComponent,
-                        const MeshColliderComponent& meshColliderComponent)
+         .each([&world](const ModelComponent& model_component, PhysicsBodyIdComponent& body_id_holder,
+                        MatrixComponent& matrix_component,
+                        const MeshColliderComponent& mesh_collider)
              {
-                 JPH::StaticCompoundShapeSettings staticCompoundShapeSettings{};
-                 AssembleStaticCompoundShape(staticCompoundShapeSettings, modelComponent);
-                 JPH::ShapeSettings::ShapeResult compoundShapeResult = staticCompoundShapeSettings.Create();
-                 if (compoundShapeResult.HasError())
+                 JPH::StaticCompoundShapeSettings static_compound_shape_settings{};
+                 AssembleStaticCompoundShape(static_compound_shape_settings, model_component);
+                 JPH::ShapeSettings::ShapeResult compound_shape_result = static_compound_shape_settings.Create();
+                 if (compound_shape_result.HasError())
                  {
                      spdlog::error("Failed to create a compound shape!");
                  }
 
-                 JPH::ShapeRefC meshShape = compoundShapeResult.Get();
-                 auto entityPosition = GetPositionFromMatrix(matrixComponent.matrix);
-                 auto entityRotation = QuaternionNormalize(QuaternionFromMatrix(matrixComponent.matrix));
-                 JPH::RVec3 bodyPosition{entityPosition.x, entityPosition.y, entityPosition.z};
-                 JPH::Quat bodyRotation{entityRotation.x, entityRotation.y, entityRotation.z, entityRotation.w};
-                 JPH::BodyCreationSettings bodySettings{
-                     meshShape, bodyPosition, bodyRotation, JPH::EMotionType::Static,
+                 JPH::ShapeRefC mesh_shape = compound_shape_result.Get();
+                 auto entity_position = GetPositionFromMatrix(matrix_component.matrix);
+                 auto entity_rotation = QuaternionNormalize(QuaternionFromMatrix(matrix_component.matrix));
+                 JPH::RVec3 body_position{entity_position.x, entity_position.y, entity_position.z};
+                 JPH::Quat body_rotation{entity_rotation.x, entity_rotation.y, entity_rotation.z, entity_rotation.w};
+                 JPH::BodyCreationSettings body_settings{
+                     mesh_shape, body_position, body_rotation, JPH::EMotionType::Static,
                      PhysicsObjectLayers::NON_MOVING
                  };
 
