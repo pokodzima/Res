@@ -57,17 +57,17 @@ res::PhysicsSystems::PhysicsSystems(flecs::world& world)
                  JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers,
                  std::thread::hardware_concurrency() - 1);
 
-             constexpr JPH::uint cMaxBodies = 65536;
-             constexpr JPH::uint cNumBodyMutexes = 0;
-             constexpr JPH::uint cMaxBodyPairs = 65536;
-             constexpr JPH::uint cMaxContactConstraints = 10240;
+             constexpr JPH::uint kMaxBodies = 65536;
+             constexpr JPH::uint kNumBodyMutexes = 0;
+             constexpr JPH::uint kMaxBodyPairs = 65536;
+             constexpr JPH::uint kMaxContactConstraints = 10240;
 
              handle.broad_phase_layer_interface = std::make_unique<BPLayerInterfaceImpl>();
              handle.object_vs_broad_phase_layer_filter = std::make_unique<ObjectVsBroadPhaseLayerFilterImpl>();
              handle.object_vs_object_layer_filter = std::make_unique<ObjectLayerPairFilterImpl>();
 
              handle.physics_system = std::make_unique<JPH::PhysicsSystem>();
-             handle.physics_system->Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints,
+             handle.physics_system->Init(kMaxBodies, kNumBodyMutexes, kMaxBodyPairs, kMaxContactConstraints,
                                         *handle.broad_phase_layer_interface, *handle.object_vs_broad_phase_layer_filter,
                                         *handle.object_vs_object_layer_filter);
 
