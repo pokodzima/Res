@@ -6,7 +6,7 @@ namespace res
     class Window
     {
     public:
-        Window(int width, int height, int FPS, const std::string& name);
+        Window(int width, int height, int fps, const std::string& name);
 
         ~Window();
     };

@@ -10,9 +10,9 @@ namespace res
     // col2: {m8,  m9,  m10}  -> Forward (-Z)
     // col3: {m12, m13, m14}  -> Translation (position)
 
-    [[nodiscard]] inline Vector3 DegreesToRadians(const Vector3& rotationInDegrees)
+    [[nodiscard]] inline Vector3 DegreesToRadians(const Vector3& rotation_in_degrees)
     {
-        return Vector3Scale(rotationInDegrees, DEG2RAD);
+        return Vector3Scale(rotation_in_degrees, DEG2RAD);
     }
 
     [[nodiscard]] inline Vector3 GetForwardVector(const Matrix& matrix)

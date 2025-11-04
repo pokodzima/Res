@@ -32,13 +32,13 @@ namespace res
         static constexpr JPH::uint NUM_LAYERS = 2;
     }
 
-    static void TraceImpl(const char* inFMT, ...)
+    static void TraceImpl(const char* format, ...)
     {
         // Format the message
         va_list list;
-        va_start(list, inFMT);
+        va_start(list, format);
         char buffer[1024];
-        vsnprintf(buffer, sizeof(buffer), inFMT, list);
+        vsnprintf(buffer, sizeof(buffer), format, list);
         va_end(list);
 
         // Print to the TTY
@@ -47,10 +47,10 @@ namespace res
 
 #ifdef JPH_ENABLE_ASSERTS
     // Callback for asserts, connect this to your own assert handler if you have one
-    static bool AssertFailedImpl(const char* inExpression, const char* inMessage, const char* inFile, JPH::uint inLine)
+    static bool AssertFailedImpl(const char* expression, const char* message, const char* file, JPH::uint line)
     {
         // Print to the TTY
-        std::cout << inFile << ":" << inLine << ": (" << inExpression << ") " << (inMessage != nullptr ? inMessage : "")
+        std::cout << file << ":" << line << ": (" << expression << ") " << (message != nullptr ? message : "")
             << "\n";
 
         // Breakpoint
@@ -61,17 +61,17 @@ namespace res
     class ObjectLayerPairFilterImpl final : public JPH::ObjectLayerPairFilter
     {
     public:
-        [[nodiscard]] bool ShouldCollide(JPH::ObjectLayer inLayer1, JPH::ObjectLayer inLayer2) const override;
+        [[nodiscard]] bool ShouldCollide(JPH::ObjectLayer layer1, JPH::ObjectLayer layer2) const override;
     };
 
     class BPLayerInterfaceImpl final : public JPH::BroadPhaseLayerInterface
     {
     public:
         BPLayerInterfaceImpl():
-            mObjectToBroadPhase{}
+            object_to_broad_phase_{}
         {
-            mObjectToBroadPhase[PhysicsObjectLayers::NON_MOVING] = BroadPhaseLayers::NON_MOVING;
-            mObjectToBroadPhase[PhysicsObjectLayers::MOVING] = BroadPhaseLayers::MOVING;
+            object_to_broad_phase_[PhysicsObjectLayers::NON_MOVING] = BroadPhaseLayers::NON_MOVING;
+            object_to_broad_phase_[PhysicsObjectLayers::MOVING] = BroadPhaseLayers::MOVING;
         }
 
         [[nodiscard]] JPH::uint GetNumBroadPhaseLayers() const override
@@ -79,16 +79,16 @@ namespace res
             return BroadPhaseLayers::NUM_LAYERS;
         }
 
-        [[nodiscard]] JPH::BroadPhaseLayer GetBroadPhaseLayer(JPH::ObjectLayer inLayer) const override
+        [[nodiscard]] JPH::BroadPhaseLayer GetBroadPhaseLayer(JPH::ObjectLayer layer) const override
         {
-            JPH_ASSERT(inLayer < PhysicsObjectLayers::NUM_LAYERS);
-            return mObjectToBroadPhase[inLayer];
+            JPH_ASSERT(layer < PhysicsObjectLayers::NUM_LAYERS);
+            return object_to_broad_phase_[layer];
         }
 
 #if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
-        [[nodiscard]] const char* GetBroadPhaseLayerName(JPH::BroadPhaseLayer inLayer) const override
+        [[nodiscard]] const char* GetBroadPhaseLayerName(JPH::BroadPhaseLayer layer) const override
         {
-            switch (static_cast<JPH::BroadPhaseLayer::Type>(inLayer))
+            switch (static_cast<JPH::BroadPhaseLayer::Type>(layer))
             {
             case static_cast<JPH::BroadPhaseLayer::Type>(BroadPhaseLayers::NON_MOVING): return "NON_MOVING";
             case static_cast<JPH::BroadPhaseLayer::Type>(BroadPhaseLayers::MOVING): return "MOVING";
@@ -100,18 +100,18 @@ namespace res
 #endif
 
     private:
-        JPH::BroadPhaseLayer mObjectToBroadPhase[PhysicsObjectLayers::NUM_LAYERS];
+        JPH::BroadPhaseLayer object_to_broad_phase_[PhysicsObjectLayers::NUM_LAYERS];
     };
 
     class ObjectVsBroadPhaseLayerFilterImpl : public JPH::ObjectVsBroadPhaseLayerFilter
     {
     public:
-        [[nodiscard]] bool ShouldCollide(JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2) const override;
+        [[nodiscard]] bool ShouldCollide(JPH::ObjectLayer layer1, JPH::BroadPhaseLayer layer2) const override;
     };
 
 
-    void PopulateJoltVertices(const float* rlVertices, int vertexCount, JPH::VertexList& joltVertices);
-    void PopulateJoltTriangles(const unsigned short* rlIndices, int triangleCount,
-                               JPH::IndexedTriangleList& joltTriangles);
-    void AssembleStaticCompoundShape(JPH::StaticCompoundShapeSettings& shapeSettings, const ModelComponent& modelComponent);
+    void PopulateJoltVertices(const float* raylib_vertices, int vertex_count, JPH::VertexList& jolt_vertices);
+    void PopulateJoltTriangles(const unsigned short* raylib_indices, int triangle_count,
+                               JPH::IndexedTriangleList& jolt_triangles);
+    void AssembleStaticCompoundShape(JPH::StaticCompoundShapeSettings& shape_settings, const ModelComponent& model_component);
 }

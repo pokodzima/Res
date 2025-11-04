@@ -12,18 +12,19 @@ res::UISystems::UISystems(flecs::world& world)
 {
     world.module<UISystems>();
 
-    auto OnRender2DPhase = world.lookup(res::OnRender2DPhaseName.data());
+    auto on_render_2d_phase = world.lookup(res::kRender2DPhaseName.data());
 
     world.system<const TextComponent, const Position2dComponent, const Renderable2dComponent, const TextElementComponent
                  , const ColorComponent>(
              "Render UI Text")
-         .kind(OnRender2DPhase)
-         .each([](const TextComponent& textComponent, const Position2dComponent& positionComponent,
-                  const Renderable2dComponent& renderableComponent, const TextElementComponent& elementComponent,
-                  const ColorComponent& colorComponent)
+         .kind(on_render_2d_phase)
+         .each([](const TextComponent& text_component, const Position2dComponent& position_component,
+                  const Renderable2dComponent& renderable_component, const TextElementComponent& element_component,
+                  const ColorComponent& color_component)
          {
-             DrawText(textComponent.textString.c_str(), (int)positionComponent.x, (int)positionComponent.y,
-                      elementComponent.fontSize,
-                      colorComponent.color);
+             DrawText(text_component.text.c_str(), static_cast<int>(position_component.x), 
+                      static_cast<int>(position_component.y),
+                      element_component.font_size,
+                      color_component.color);
          });
 }

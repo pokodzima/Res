@@ -7,7 +7,7 @@ namespace res
 {
     struct TextComponent
     {
-        std::string textString;
+        std::string text;
     };
 
     struct ColorComponent

@@ -14,20 +14,20 @@ res::InputSystems::InputSystems(flecs::world& world)
 {
     world.module<InputSystems>();
 
-    auto onTickPhase = world.lookup(OnTickPhaseName.data());
+    auto on_tick_phase = world.lookup(kTickPhaseName.data());
 
-    assert(onTickPhase != 0 && "OnTickPhase not found");
+    assert(on_tick_phase != 0 && "OnTickPhase not found");
 
     world.system<MovementInputComponent, const PlayerComponent>("Populate Player Movement Input")
-         .kind(onTickPhase)
-         .each([](MovementInputComponent& movementInputComponent, const PlayerComponent& playerComponent)
+         .kind(on_tick_phase)
+         .each([](MovementInputComponent& movement_input, const PlayerComponent& player)
          {
-             movementInputComponent.input.x = static_cast<float>(IsKeyDown(KEY_W)) * 1.0f - static_cast<float>(
-                 IsKeyDown(KEY_S)) * 1.0f;
+             movement_input.input.x = static_cast<float>(IsKeyDown(KEY_W)) - static_cast<float>(
+                 IsKeyDown(KEY_S));
 
-             movementInputComponent.input.y = static_cast<float>(IsKeyDown(KEY_D)) * 1.0f - static_cast<float>(
-                 IsKeyDown(KEY_A)) * 1.0f;
+             movement_input.input.y = static_cast<float>(IsKeyDown(KEY_D)) - static_cast<float>(
+                 IsKeyDown(KEY_A));
 
-             movementInputComponent.input = Vector2Normalize(movementInputComponent.input);
+             movement_input.input = Vector2Normalize(movement_input.input);
          });
 }
