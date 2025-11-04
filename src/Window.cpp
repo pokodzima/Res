@@ -1,7 +1,7 @@
 #include "Window.h"
 
-#include "raylib.h"
-#include "rlImGui.h"
+#include <raylib.h>
+#include <rlImGui.h>
 
 res::Window::Window(const int width, const int height, const int fps, const std::string& name)
 {

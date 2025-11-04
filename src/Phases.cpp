@@ -1,4 +1,5 @@
 #include "Phases.h"
+
 #include <flecs.h>
 
 void res::CreatePhases(flecs::world& world)

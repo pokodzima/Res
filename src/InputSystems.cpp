@@ -1,13 +1,13 @@
 #include "InputSystems.h"
 
-#include "InputComponents.h"
 #include "CommonComponents.h"
+#include "InputComponents.h"
 #include "Phases.h"
+
+#include <cassert>
 
 #include <flecs.h>
 #include <raymath.h>
-
-#include <cassert>
 
 
 res::InputSystems::InputSystems(flecs::world& world)

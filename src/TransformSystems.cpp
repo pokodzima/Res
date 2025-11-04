@@ -1,10 +1,11 @@
 #include "TransformSystems.h"
+
+#include <flecs.h>
+#include <raylib.h>
+
 #include "Phases.h"
 #include "RenderComponents.h"
 #include "TransformComponents.h"
-#include "raylib.h"
-
-#include <flecs.h>
 
 res::TransformSystems::TransformSystems(flecs::world &world) {
   world.module<TransformSystems>();

@@ -1,13 +1,13 @@
 #include "RenderSystems.h"
 
+#include <flecs.h>
+#include <raylib.h>
+#include <raymath.h>
+
 #include "MathUtils.h"
 #include "Phases.h"
 #include "RenderComponents.h"
 #include "TransformComponents.h"
-
-#include <flecs.h>
-#include <raylib.h>
-#include <raymath.h>
 
 res::RenderSystems::RenderSystems(flecs::world &world) {
   world.module<RenderSystems>();
