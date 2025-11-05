@@ -28,10 +28,12 @@ res::RenderSystems::RenderSystems(flecs::world &world) {
   assert(on_render_3d_phase != 0 && "OnRender3DPhase not found!");
   assert(on_begin_phase != 0 && "OnBeginPhase not found!");
 
-  world.system("Begin Render").kind(on_pre_render_phase).run([](flecs::iter &it) {
-    BeginDrawing();
-    ClearBackground(WHITE);
-  });
+  world.system("Begin Render")
+      .kind(on_pre_render_phase)
+      .run([](flecs::iter &it) {
+        BeginDrawing();
+        ClearBackground(WHITE);
+      });
 
   world.system<const CameraComponent>("Begin Render3D")
       .kind(on_pre_render_3d_phase)
@@ -48,17 +50,19 @@ res::RenderSystems::RenderSystems(flecs::world &world) {
     DrawFPS(20, 20);
   });
 
-  world.system("End Render").kind(on_post_render_phase).run([](flecs::iter &it) {
-    EndDrawing();
-  });
+  world.system("End Render")
+      .kind(on_post_render_phase)
+      .run([](flecs::iter &it) { EndDrawing(); });
 
   world
       .system<const RenderableComponent, const ModelComponent,
               const MatrixComponent>("Render Models")
       .kind(on_render_3d_phase)
-      .each([](const RenderableComponent &renderable, const ModelComponent &model_component,
+      .each([](const RenderableComponent &renderable,
+               const ModelComponent &model_component,
                const MatrixComponent matrix_component) {
-        DrawModel(model_component.model, GetPositionFromMatrix(matrix_component.matrix), 1.0f, WHITE);
+        DrawModel(model_component.model,
+                  GetPositionFromMatrix(matrix_component.matrix), 1.0f, WHITE);
       });
 
   world
@@ -69,7 +73,8 @@ res::RenderSystems::RenderSystems(flecs::world &world) {
                const SpherePrimitiveComponent &sphere,
                const MatrixComponent matrix_component) {
         constexpr float kSphereRadius = 0.5f;
-        DrawSphere(GetPositionFromMatrix(matrix_component.matrix), kSphereRadius, RED);
+        DrawSphere(GetPositionFromMatrix(matrix_component.matrix),
+                   kSphereRadius, RED);
       });
 
   world
@@ -87,14 +92,32 @@ res::RenderSystems::RenderSystems(flecs::world &world) {
         start_position.y -= kCapsuleHeight / 2.0f;
         auto end_position = start_position;
         end_position.y += kCapsuleHeight;
-        DrawCapsule(start_position, end_position, kCapsuleRadius, kCapsuleRings, kCapsuleSlices, RED);
+        DrawCapsule(start_position, end_position, kCapsuleRadius, kCapsuleRings,
+                    kCapsuleSlices, RED);
+      });
+
+  world
+      .system<const RenderableComponent, const CubePrimitiveComponent,
+              const MatrixComponent>("Draw Cube")
+      .kind(on_render_3d_phase)
+      .each([](const RenderableComponent &renderable,
+               const CubePrimitiveComponent &cube_component,
+               const MatrixComponent &matrix_component) {
+        constexpr float width = 1.0f;
+        constexpr float height = 1.0f;
+        constexpr float lenght = 1.0f;
+        constexpr Color color = RED;
+
+        DrawCube(GetPositionFromMatrix(matrix_component.matrix), width, height,
+                 lenght, color);
       });
 
   world
       .system<const RenderableComponent, const GridPrimitiveComponent>(
           "Draw Grid")
       .kind(on_render_3d_phase)
-      .each([](const RenderableComponent &renderable, const GridPrimitiveComponent &grid) {
+      .each([](const RenderableComponent &renderable,
+               const GridPrimitiveComponent &grid) {
         DrawGrid(grid.slices, grid.spacing);
       });
 

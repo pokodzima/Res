@@ -17,6 +17,8 @@ struct SpherePrimitiveComponent {};
 
 struct CapsulePrimitiveComponent {};
 
+struct CubePrimitiveComponent {};
+
 struct GridPrimitiveComponent {
   int slices;
   float spacing;
